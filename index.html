@@ -1,13 +1,211 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Quote - Decide Your Life</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>让动漫名台词指引你的命运</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        h1 { text-align: center; color: #ffffff; }
+        .container { background: white; padding: 20px; border-radius: 10px; }
+        .quote-container { margin: 20px 0; padding: 15px; border-left: 4px solid #f06292; }
+        .quote { font-size: 18px; }
+        .source { font-style: italic; color: #666; }
+        .heart { cursor: pointer; color: gray; }
+        .heart.liked { color: red; }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #764ba2; }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 24px; }
+            .quote { font-size: 16px; }
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to Anime Quote - Decide Your Life</h1>
-  <p>Your journey starts with a quote. Choose your destiny!</p>
+    <h1>让动漫名台词指引你的命运</h1>
+    <div class="container">
+        <button id="generateBtn">获取命运指引</button>
+        <div id="quoteContainer" class="quote-container"></div>
+        <h2>提交你的台词</h2>
+        <input type="text" id="userQuote" placeholder="输入你的动漫台词" />
+        <input type="text" id="userCharacter" placeholder="角色名（可选）" />
+        <input type="text" id="userAnime" placeholder="动漫名" />
+        <button id="submitQuote">提交</button>
+        <h2>排行榜</h2>
+        <div id="leaderboard"></div>
+    </div>
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const quoteContainer = document.getElementById('quoteContainer');
+        const submitBtn = document.getElementById('submitQuote');
+        const userQuote = document.getElementById('userQuote');
+        const userCharacter = document.getElementById('userCharacter');
+        const userAnime = document.getElementById('userAnime');
+        const leaderboard = document.getElementById('leaderboard');
+        let quotes = JSON.parse(localStorage.getItem('quotes')) || [
+            { text: "明明想要杀死某种生物，自己却没有做好被杀死的准备，你不觉得这种想法很奇怪么？", character: "时崎狂三", anime: "《约会大作战》", likes: 0 },
+            { text: "我们每天度过的称之为日常的生活，其实是一个个奇迹的连续也说不定。", anime: "《日常》", likes: 0 },
+            { text: "与其有闲琢磨如何漂亮死去，还不如漂亮的活到最后一刻。", anime: "《银魂》", likes: 0 },
+            { text: "拥有被杀的觉悟，才有开枪的权利。", character: "鲁鲁修", anime: "《反叛的鲁鲁修》", likes: 0 },
+            { text: "这是你若不能理解的，人类感情的极致，比希望更热烈，比绝望更深邃的——爱啊！", character: "晓美焰", anime: "《魔法少女小圆—叛逆的物语》", likes: 0 },
+            { text: "花开，然后花谢；星星是璀璨的，但那光芒也有消失的时候；这个地球、太阳、银河系，还有这个浩瀚的宇宙都会有死的一天。人类的一生，与这些相比的话——不过是一眨眼那么短暂而已。在那样短暂的时光中，人们诞生、欢笑、流泪、战斗、受伤、欢喜、悲伤……憎恨某人，爱上某人，一切的一切，都只是刹那的邂逅。终究将归入死的永眠。这世界上，有些人有多冷漠，有些人就有多温暖。你看，这就是人性的卑微。极力的掩饰自己的肮脏，却又在被戳破后恼羞成怒。就算不快乐也不要皱眉，因为你永远不知道，谁会爱上你的笑容。", character: "沙加", anime: "《圣斗士星矢》", likes: 0 },
+            { text: "我们只是活着就已经竭尽全力了。", anime: "《银魂》", likes: 0 },
+            { text: "我们终会相知，在那悠远的苍穹。", anime: "《缘之空》", likes: 0 },
+            { text: "零食就是正义！", character: "紫原敦", anime: "《黑子的篮球》", likes: 0 },
+            { text: "把已经失去的东西重新变得有意义的职业只有两个，作家和侦探。只有作家才能在梦想中将其复活，只有侦探才能将其从坟墓中挖掘出来还原成信息。", character: "爱丽丝", anime: "《神的记事本》", likes: 0 },
+            { text: "不抵抗就不会死，为什么你就是不明白！", character: "卡缪·维丹", anime: "《机动战士 Z 高达》", likes: 0 },
+            { text: "没有什么大不了这句话，只有当事者才有资格说", anime: "《悠久之翼》", likes: 0 },
+            { text: "能哭的地方，只有厕所，和爸爸的怀里。", anime: "《clannad》", likes: 0 },
+            { text: "谁都无法相信未来，谁都无法接受未来。", character: "晓美焰", anime: "《魔法少女小圆》", likes: 0 },
+            { text: "要得到幸福的话，就需要与之相应的努力，也就是代价。不是经常说人生是正负和零么！有好事也有痛苦的事，有痛苦的事也有好事。不过这是错的。为了变得幸福，作为代价，必须背负与其同等的不幸。也就是说为了好事情，必须要忍受坏事情。所谓有痛苦的事就有好事什么的，并不是含有乐观意味的话。反过来说，在高的地位上的话，对工作就有相应的高要求对吧。要是不能满足这种高要求就是不诚实的人。再进一步反过来说，要把自己置于不幸中的话，自己就必须放弃一定程度的努力。", character: "壹原侑子", anime: "《xxxHolic》", likes: 0 },
+            { text: "这样被诅咒的人生，怎么能接受呢。", character: "仲村由理", anime: "《angelbeats》", likes: 0 },
+            { text: "人类这种生物，有时候是连短短的十分钟也等不起的！", character: "仲村由理", anime: "《Angel Beats!》", likes: 0 },
+            { text: "有树叶飞舞的地方，就会有火在燃烧，火的意志照耀着村子，就会有更多的树叶发芽，他们会承载着火的意志，把信念带向远方。", anime: "《火影忍者》", likes: 0 },
+            { text: "所谓的觉悟、就是在黑暗的荒野中开辟前行的道路", character: "乔鲁诺乔班纳", anime: "《JOJO 的奇妙冒险》", likes: 0 },
+            { text: "没有痛苦相伴的教训是毫无意义的，因为、人倘若不牺牲些什么，就什么也不可能得到。但是，当直面这些痛苦、克服它们的时候，人将获得不输给任何事物的坚韧的心。没错，钢铁一般的心。", character: "爱德华", anime: "《钢之炼金术师》", likes: 0 },
+            { text: "雪为什么是白色的？因为它们忘记了自己本身的颜色……", character: "C.C", anime: "《反叛的鲁路修》", likes: 0 },
+            { text: "何等失态，罪该万死", character: "提耶利亚", anime: "《高达 OO》", likes: 0 },
+            { text: "一个人才会混乱的吧，即使是在黑暗中，只要有个人和自己一起走的话，就会安心很多，也一定会找到答案的。", anime: "《TrueTears》", likes: 0 },
+            { text: "如果每个人都能为自己所爱的事情付诸努力，那崭新的地方定是梦想的终点", anime: "《LOVE LIVE》", likes: 0 },
+            { text: "我错了，善良没有任何意义 渣滓必须受到歧视 我... 要成为王", character: "樱满集", anime: "《罪恶王冠》", likes: 0 },
+            { text: "萝莉控不是病，是人生态度啊！", character: "安藤寿来", anime: "《日常系的异能战斗》", likes: 0 },
+            { text: "所谓的王者，就是要活的比任何人都要耀眼，成为万民敬仰的存在。", character: "伊斯坎达尔", anime: "《Fate Zero》", likes: 0 },
+            { text: "瞬间的犹豫可是会丧命的，所以我决不会犹豫。", character: "夏尔", anime: "《黑执事》", likes: 0 },
+            { text: "1000 减 7 等于多少？", character: "金木研", anime: "《东京喰种》", likes: 0 },
+            { text: "我们总是在意错过了多少，却不注意自己拥有多少。", anime: "《未闻花名》", likes: 0 },
+            { text: "人没有牺牲就没有获得, 如果要获得什么就必须付出同等的代价。", anime: "《钢之炼金术师》", likes: 0 },
+            { text: "男人变态有什么错！", character: "前原圭一", anime: "《寒蝉鸣啼之时》", likes: 0 },
+            { text: "苦难算什么，我本来就喜欢走在修罗之路上", character: "索隆", anime: "《海贼王》", likes: 0 },
+            { text: "大家回答我　为什么要低头，重复一遍　为什么要低头，我们是弱者！现在如此　过去也如此！是的　不是什么都没有改变吗！强者模仿弱者夺来的武器　是无法发挥出其真正的力量的，要说为什么的话　我们的武器本质在于，那弱小到悲屈的软弱啊！我在此强调，我们是弱者！我们宣誓作为弱者活下去，像弱者一样战斗然后已弱者的方式消灭强者！就像过去一样　今后也会贯彻到底！承认吧　我们是最弱的种族！正因为我们天生什么都没有，所以才能驾驭一切的，最弱的种族！", character: "空", anime: "《no game no life》", likes: 0 },
+            { text: "不能逃避，不能逃避，不能逃避。", character: "碇真嗣", anime: "《EVA》", likes: 0 },
+            { text: "关于自己的生活，我和你都不是读者，而是作者。至少结局，还是能自己说了算的。", character: "银桑", anime: "《银魂》", likes: 0 },
+            { text: "能原谅女人谎话的————才是男人！", character: "香吉士", anime: "《海贼王》", likes: 0 },
+            { text: "群聚的都是弱者。弱小的草食动物才喜欢群聚。", anime: "《家庭教师》", likes: 0 },
+            { text: "遥远的不是距离，而是次元啊！", character: "安艺伦也", anime: "《路人女主的养成方法》", likes: 0 },
+            { text: "即使是走过无数次的路，也能走到从未踏足过的地方，正因为是走过无数次的路，景色才会变幻万千，光是这样还不足够吗？因为只是这样，所以才不足够吗？", character: "函南优一", anime: "《空中杀手》", likes: 0 },
+            { text: "错的不是我，而是这个世界。", anime: "《東京喰种》", likes: 0 },
+            { text: "时间可以冲淡一切，但，我並不想用时间来磨平伤口。", anime: "《黑执事》", likes: 0 },
+            { text: "不要哀求，学会争取若是如此，终有所获。", character: "阿德洛克•萨斯顿", anime: "《交响诗篇》", likes: 0 },
+            { text: "秒速 5 厘米，那是樱花飘落的速度，那么怎样的速度，才能走完我与你之间的距离？", anime: "《秒速五厘米》", likes: 0 },
+            { text: "一切都是 Steins Gate 的选择！", anime: "《命运石之门》", likes: 0 },
+            { text: "可能会有迷茫的時候，也可能会有因为不如意而觉得烦躁的时候。无论是谁都会遇到低谷，但只有跨越低谷的人才能得到大家的认可。", anime: "《花开物语》", likes: 0 },
+            { text: "明明感觉距离很近 但伸手却又抓不到 即使这样 即使望尘莫及 亦有留在心中的东西 曾身处同一时间层 曾仰望过同一样东西 只要记着这些 就算相互远离 也依然可以相信我们还是同在 现在要不停蹦跑 只要目标远大 总有一天 会赶上那目标", anime: "《fate/stay night》", likes: 0 },
+            { text: "没必要的事不做，必要的事尽快做。", character: "折木奉太郎", anime: "《冰菓》", likes: 0 },
+            { text: "就算悲伤难抑，遍体鳞伤的处于谷底，也不能停下演奏，只有这样我们才是真正活着的。-你真的可以忘记么？", anime: "《四月是你的谎言》", likes: 0 },
+            { text: "这个世界上没有偶然，有的只是必然", character: "壹原侑子", anime: "《xxxholic》", likes: 0 },
+            { text: "苦恼着，歇斯底里着，痛苦着，不断挣扎的数月时间，这一切会在未来的某一瞬间得到回报。我们或许就是被那个瞬间迷住的，一种无可救药的生物吧。", anime: "《四月是你的谎言》", likes: 0 },
+            { text: "人类的赞歌就是勇气的赞歌！", anime: "《jojo 的奇妙冒险》", likes: 0 },
+            { text: "藏好了吗？", anime: "《未闻花名》", likes: 0 },
+            { text: "什么也无法舍弃的人，就什么也无法改变。", character: "埃尔文斯密斯", anime: "《进击的巨人》", likes: 0 }
+        ];
+        let userQuotes = JSON.parse(localStorage.getItem('userQuotes')) || [];
+        
+        function saveQuotes() {
+            try {
+                localStorage.setItem('quotes', JSON.stringify(quotes));
+            } catch (error) {
+                console.error('保存台词失败：', error);
+            }
+        }
+        function saveUserQuotes() {
+            try {
+                localStorage.setItem('userQuotes', JSON.stringify(userQuotes));
+            } catch (error) {
+                console.error('保存用户台词失败：', error);
+            }
+        }
+        
+        function generateRandomQuote() {
+            const allQuotes = [...quotes, ...userQuotes];
+            if (allQuotes.length === 0) {
+                quoteContainer.innerHTML = `<p class='quote'>暂无台词，快来提交吧！</p>`;
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * allQuotes.length);
+            displayQuote(allQuotes[randomIndex]);
+        }
+        
+        function displayQuote(quote) {
+            quoteContainer.innerHTML = `
+                <p class='quote'>${quote.text}</p>
+                <p class='source'>${quote.character ? `<b>${quote.character}</b> —— ` : ''}${quote.anime}</p>
+                <span class='heart ${quote.liked ? 'liked' : ''}'>❤️ ${quote.likes}</span>
+            `;
+            const heart = quoteContainer.querySelector('.heart');
+            heart.addEventListener('click', () => {
+                quote.liked = !quote.liked;
+                quote.likes = quote.liked ? quote.likes + 1 : quote.likes - 1;
+                saveQuotes();
+                saveUserQuotes();
+                displayQuote(quote);
+                updateLeaderboard();
+            });
+        }
+        
+        function submitUserQuote() {
+            const quoteText = userQuote.value.trim();
+            const animeName = userAnime.value.trim();
+            if (!quoteText || !animeName) {
+                alert('请填写完整的台词和动漫名！');
+                return;
+            }
+            const newQuote = {
+                text: quoteText,
+                character: userCharacter.value.trim(),
+                anime: animeName,
+                likes: 0,
+                liked: false
+            };
+            userQuotes.push(newQuote);
+            saveUserQuotes();
+            userQuote.value = userCharacter.value = userAnime.value = '';
+            alert('台词已提交！');
+            updateLeaderboard();
+        }
+        
+        function updateLeaderboard() {
+            leaderboard.innerHTML = '';
+            const sortedQuotes = [...quotes, ...userQuotes].sort((a, b) => b.likes - a.likes).slice(0, 5);
+            if (sortedQuotes.length === 0) {
+                leaderboard.innerHTML = `<p>暂无数据，快来提交台词吧！</p>`;
+                return;
+            }
+            sortedQuotes.forEach(q => {
+                const div = document.createElement('div');
+                div.innerHTML = `<p>${q.text} <span class='heart'>❤️ ${q.likes}</span></p>`;
+                leaderboard.appendChild(div);
+            });
+        }
+        
+        generateBtn.addEventListener('click', generateRandomQuote);
+        submitBtn.addEventListener('click', submitUserQuote);
+        updateLeaderboard();
+    </script>
 </body>
 </html>
