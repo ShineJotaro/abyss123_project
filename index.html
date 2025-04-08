@@ -1,15 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>让动漫名台词指引你的命运</title>
-
-  <!-- Google AdSense Script -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
+    <!-- Google AdSense Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
      crossorigin="anonymous"></script>
-
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -45,6 +42,13 @@
             cursor: pointer;
         }
         button:hover { background-color: #764ba2; }
+        .ads-container {
+            margin: 20px 0;
+            text-align: center;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 5px;
+        }
         @media (max-width: 600px) {
             body { padding: 10px; }
             h1 { font-size: 24px; }
@@ -55,8 +59,35 @@
 <body>
     <h1>让动漫名台词指引你的命运</h1>
     <div class="container">
+        <!-- 广告容器1 -->
+        <div class="ads-container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-9923429709566940"
+                 data-ad-slot="YOUR-AD-SLOT-ID"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+        
         <button id="generateBtn">获取命运指引</button>
         <div id="quoteContainer" class="quote-container"></div>
+        
+        <!-- 广告容器2 -->
+        <div class="ads-container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-9923429709566940"
+                 data-ad-slot="YOUR-AD-SLOT-ID"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+        
         <h2>提交你的台词</h2>
         <input type="text" id="userQuote" placeholder="输入你的动漫台词" />
         <input type="text" id="userCharacter" placeholder="角色名（可选）" />
@@ -64,6 +95,19 @@
         <button id="submitQuote">提交</button>
         <h2>排行榜</h2>
         <div id="leaderboard"></div>
+        
+        <!-- 广告容器3 -->
+        <div class="ads-container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-9923429709566940"
+                 data-ad-slot="YOUR-AD-SLOT-ID"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
     </div>
     <script>
         const generateBtn = document.getElementById('generateBtn');
@@ -129,7 +173,7 @@
             { text: "藏好了吗？", anime: "《未闻花名》", likes: 0 },
             { text: "什么也无法舍弃的人，就什么也无法改变。", character: "埃尔文斯密斯", anime: "《进击的巨人》", likes: 0 }
         ];
-        let userQuotes = JSON.parse(localStorage.getItem('userQuotes')) || [];
+       let userQuotes = JSON.parse(localStorage.getItem('userQuotes')) || [];
         
         function saveQuotes() {
             try {
@@ -211,18 +255,6 @@
         generateBtn.addEventListener('click', generateRandomQuote);
         submitBtn.addEventListener('click', submitUserQuote);
         updateLeaderboard();
-    <!-- 广告容器 -->
-<div class="ads-container" style="text-align: center; margin-top: 20px;">
-    <!-- 插入 Google AdSense 广告代码 -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="YOUR-AD-CLIENT-ID"
-         data-ad-slot="YOUR-AD-SLOT-ID"
-         data-ad-format="auto"></ins>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-</div>
 </body>
 </html>
