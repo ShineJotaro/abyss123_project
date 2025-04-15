@@ -4,110 +4,279 @@
 <meta name="google-site-verification" content="Ndi6wAGvzfauPTUizu4Pdw0eUamc9GPQ0i_QlIUY9t0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="让动漫名台词指引你的命运">
     <title>让动漫名台词指引你的命运</title>
     <!-- Google AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
      crossorigin="anonymous"></script>
+    <!-- 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <!-- 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #8e44ad;
+            --secondary-color: #3498db;
+            --accent-color: #f06292;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-light: #f5f5f5;
+            --text-dark: #333;
+            --card-bg: #fff;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --animation-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color var(--animation-speed), color var(--animation-speed);
+        }
+
         body {
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'ZCOOL XiaoWei', sans-serif;
             width: 90%;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-light);
             min-height: 100vh;
         }
-        h1 { text-align: center; color: #ffffff; }
-        .container { background: white; padding: 20px; border-radius: 10px; }
-        .quote-container { margin: 20px 0; padding: 15px; border-left: 4px solid #f06292; }
-        .quote { font-size: 18px; }
-        .source { font-style: italic; color: #666; }
-        .heart { cursor: pointer; color: gray; }
-        .heart.liked { color: red; }
+
+        h1 { 
+            text-align: center; 
+            color: var(--text-light); 
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ffb347, #60a3bc, #6a0572);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient 6s ease infinite;
+            background-size: 300% 300%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .quote-container { 
+            margin: 20px 0; 
+            padding: 20px;
+            border-left: 4px solid var(--accent-color);
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0 10px 10px 0;
+            position: relative;
+        }
+
+        .quote-container:before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            opacity: 0.2;
+            color: var(--accent-color);
+        }
+
+        .quote { 
+            font-size: 1.2rem; 
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .source { 
+            font-style: italic; 
+            color: var(--text-dark);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .character-name {
+            font-weight: bold;
+            margin-right: 5px;
+            color: var(--secondary-color);
+        }
+
+        .anime-title {
+            color: var(--primary-color);
+        }
+
+        .heart { 
+            cursor: pointer; 
+            color: gray;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .heart:hover {
+            transform: scale(1.2);
+        }
+
+        .heart.liked { 
+            color: red; 
+        }
+
         input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px;
             margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+            transition: border-color 0.3s ease;
         }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2);
+        }
+
         button {
-            padding: 10px 20px;
-            background-color: #667eea;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        button:hover { background-color: #764ba2; }
+
+        button:hover { 
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         .ads-container {
             margin: 20px 0;
             text-align: center;
-            padding: 10px;
-            background: #f8f8f8;
-            border-radius: 5px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
         }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-quote {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: var(--text-dark);
+        }
+
+        .leaderboard-likes {
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            color: #e74c3c;
+        }
+
         @media (max-width: 600px) {
-            body { padding: 10px; }
-            h1 { font-size: 24px; }
-            .quote { font-size: 16px; }
+            body { padding: 15px; }
+            h1 { font-size: 1.8rem; }
+            .quote { font-size: 1rem; }
+            button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 动漫风格滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
         }
     </style>
 </head>
 <body>
     <h1>让动漫名台词指引你的命运</h1>
     <div class="container">
-        <!-- 广告容器1 -->
-        <div class="ads-container">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-9923429709566940"
-                 data-ad-slot="7327876978"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
+               </div>
         
-        <button id="generateBtn">获取命运指引</button>
+        <button id="generateBtn"><i class="fas fa-random"></i> 获取命运指引</button>
         <div id="quoteContainer" class="quote-container"></div>
         
-        <!-- 广告容器2 -->
-        <div class="ads-container">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-9923429709566940"
-                 data-ad-slot="7327876978"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
+               </div>
         
-        <h2>提交你的台词</h2>
+        <h2 style="color: var(--text-dark); margin-top: 20px;">提交你的台词</h2>
         <input type="text" id="userQuote" placeholder="输入你的动漫台词" />
         <input type="text" id="userCharacter" placeholder="角色名（可选）" />
         <input type="text" id="userAnime" placeholder="动漫名" />
-        <button id="submitQuote">提交</button>
-        <h2>排行榜</h2>
+        <button id="submitQuote"><i class="fas fa-paper-plane"></i> 提交</button>
+        
+        <h2 style="color: var(--text-dark); margin-top: 20px;">排行榜</h2>
         <div id="leaderboard"></div>
         
         <!-- 广告容器3 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
-     crossorigin="anonymous"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-format="autorelaxed"
-     data-ad-client="ca-pub-9923429709566940"
-     data-ad-slot="7327876978"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+        <div class="ads-container">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
+                crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-format="autorelaxed"
+                data-ad-client="ca-pub-9923429709566940"
+                data-ad-slot="7327876978"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
     </div>
     <script>
@@ -204,8 +373,13 @@
         function displayQuote(quote) {
             quoteContainer.innerHTML = `
                 <p class='quote'>${quote.text}</p>
-                <p class='source'>${quote.character ? `<b>${quote.character}</b> —— ` : ''}${quote.anime}</p>
-                <span class='heart ${quote.liked ? 'liked' : ''}'>❤️ ${quote.likes}</span>
+                <div class='source'>
+                    ${quote.character ? `<span class='character-name'>${quote.character}</span>` : ''}
+                    ${quote.anime ? `<span class='anime-title'>${quote.anime}</span>` : ''}
+                </div>
+                <div style="margin-top: 15px;">
+                    <span class='heart ${quote.liked ? 'liked' : ''}'><i class="fas fa-heart"></i> ${quote.likes}</span>
+                </div>
             `;
             const heart = quoteContainer.querySelector('.heart');
             heart.addEventListener('click', () => {
@@ -246,10 +420,18 @@
                 leaderboard.innerHTML = `<p>暂无数据，快来提交台词吧！</p>`;
                 return;
             }
-            sortedQuotes.forEach(q => {
-                const div = document.createElement('div');
-                div.innerHTML = `<p>${q.text} <span class='heart'>❤️ ${q.likes}</span></p>`;
-                leaderboard.appendChild(div);
+            sortedQuotes.forEach((q, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <div style="font-weight: bold; margin-right: 10px; color: ${index < 3 ? ['gold', 'silver', '#cd7f32'][index] : 'var(--text-dark)'}">${index + 1}</div>
+                    <div class="leaderboard-quote">${q.text}</div>
+                    <div class="leaderboard-likes">
+                        <i class="fas fa-heart"></i>
+                        <span>${q.likes}</span>
+                    </div>
+                `;
+                leaderboard.appendChild(item);
             });
         }
         
