@@ -1,443 +1,212 @@
 <!DOCTYPE html>
-<html lang="zh">
+
+<html lang="en">
+
 <head>
-<meta name="google-site-verification" content="Ndi6wAGvzfauPTUizu4Pdw0eUamc9GPQ0i_QlIUY9t0" />
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="让动漫名台词指引你的命运">
-    <title>让动漫名台词指引你的命运</title>
-    <!-- Google AdSense Script -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
-     crossorigin="anonymous"></script>
-    <!-- 字体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-    <!-- 图标 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #8e44ad;
-            --secondary-color: #3498db;
-            --accent-color: #f06292;
-            --light-bg: #f5f7fa;
-            --dark-bg: #2c3e50;
-            --text-light: #f5f5f5;
-            --text-dark: #333;
-            --card-bg: #fff;
-            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --animation-speed: 0.3s;
-        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background-color var(--animation-speed), color var(--animation-speed);
-        }
+    <meta charset="UTF-8">
 
-        body {
-            font-family: 'ZCOOL XiaoWei', sans-serif;
-            width: 90%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        h1 { 
-            text-align: center; 
-            color: var(--text-light); 
-            font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff6b6b, #ffb347, #60a3bc, #6a0572);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: gradient 6s ease infinite;
-            background-size: 300% 300%;
-        }
+    <title>Abyss_123 Project Hub | Home</title>
 
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+    <!-- Load Tailwind CSS -->
 
-        .container { 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 15px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+    <script src="https://cdn.tailwindcss.com"></script>
 
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 16px rgba(0, 0, 0, 0.2);
-        }
+    <!-- Use Inter font family -->
 
-        .quote-container { 
-            margin: 20px 0; 
-            padding: 20px;
-            border-left: 4px solid var(--accent-color);
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 0 10px 10px 0;
-            position: relative;
-        }
+    <style>
 
-        .quote-container:before {
-            content: '"';
-            font-size: 4rem;
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            opacity: 0.2;
-            color: var(--accent-color);
-        }
+        body {
 
-        .quote { 
-            font-size: 1.2rem; 
-            line-height: 1.6;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
+            font-family: 'Inter', sans-serif;
 
-        .source { 
-            font-style: italic; 
-            color: var(--text-dark);
-            display: flex;
-            justify-content: flex-end;
-        }
+        }
 
-        .character-name {
-            font-weight: bold;
-            margin-right: 5px;
-            color: var(--secondary-color);
-        }
+        /* Custom gradient background for a modern look */
 
-        .anime-title {
-            color: var(--primary-color);
-        }
+        .hub-bg {
 
-        .heart { 
-            cursor: pointer; 
-            color: gray;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
+            background: linear-gradient(135deg, #1f2937, #111827);
 
-        .heart:hover {
-            transform: scale(1.2);
-        }
+        }
 
-        .heart.liked { 
-            color: red; 
-        }
+    </style>
 
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            margin: 10px 0;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 1rem;
-            background-color: var(--card-bg);
-            color: var(--text-dark);
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2);
-        }
-
-        button {
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        button:hover { 
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .ads-container {
-            margin: 20px 0;
-            text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-        }
-
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .leaderboard-item:last-child {
-            border-bottom: none;
-        }
-
-        .leaderboard-quote {
-            flex: 1;
-            font-size: 1rem;
-            line-height: 1.4;
-            color: var(--text-dark);
-        }
-
-        .leaderboard-likes {
-            margin-left: 10px;
-            display: flex;
-            align-items: center;
-            color: #e74c3c;
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 15px; }
-            h1 { font-size: 1.8rem; }
-            .quote { font-size: 1rem; }
-            button {
-                padding: 10px 20px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* 动漫风格滚动条 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-color);
-        }
-    </style>
 </head>
-<body>
-    <h1>让动漫名台词指引你的命运</h1>
-    <div class="container">
-               </div>
-        
-        <button id="generateBtn"><i class="fas fa-random"></i> 获取命运指引</button>
-        <div id="quoteContainer" class="quote-container"></div>
-        
-               </div>
-        
-        <h2 style="color: var(--text-dark); margin-top: 20px;">提交你的台词</h2>
-        <input type="text" id="userQuote" placeholder="输入你的动漫台词" />
-        <input type="text" id="userCharacter" placeholder="角色名（可选）" />
-        <input type="text" id="userAnime" placeholder="动漫名" />
-        <button id="submitQuote"><i class="fas fa-paper-plane"></i> 提交</button>
-        
-        <h2 style="color: var(--text-dark); margin-top: 20px;">排行榜</h2>
-        <div id="leaderboard"></div>
-        
-        <!-- 广告容器3 -->
-        <div class="ads-container">
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
-                crossorigin="anonymous"></script>
-            <ins class="adsbygoogle"
-                style="display:block"
-                data-ad-format="autorelaxed"
-                data-ad-client="ca-pub-9923429709566940"
-                data-ad-slot="7327876978"></ins>
-            <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
-    </div>
-    <script>
-        const generateBtn = document.getElementById('generateBtn');
-        const quoteContainer = document.getElementById('quoteContainer');
-        const submitBtn = document.getElementById('submitQuote');
-        const userQuote = document.getElementById('userQuote');
-        const userCharacter = document.getElementById('userCharacter');
-        const userAnime = document.getElementById('userAnime');
-        const leaderboard = document.getElementById('leaderboard');
-        let quotes = JSON.parse(localStorage.getItem('quotes')) || [
-            { text: "明明想要杀死某种生物，自己却没有做好被杀死的准备，你不觉得这种想法很奇怪么？", character: "时崎狂三", anime: "《约会大作战》", likes: 0 },
-            { text: "我们每天度过的称之为日常的生活，其实是一个个奇迹的连续也说不定。", anime: "《日常》", likes: 0 },
-            { text: "与其有闲琢磨如何漂亮死去，还不如漂亮的活到最后一刻。", anime: "《银魂》", likes: 0 },
-            { text: "拥有被杀的觉悟，才有开枪的权利。", character: "鲁鲁修", anime: "《反叛的鲁鲁修》", likes: 0 },
-            { text: "这是你若不能理解的，人类感情的极致，比希望更热烈，比绝望更深邃的——爱啊！", character: "晓美焰", anime: "《魔法少女小圆—叛逆的物语》", likes: 0 },
-            { text: "花开，然后花谢；星星是璀璨的，但那光芒也有消失的时候；这个地球、太阳、银河系，还有这个浩瀚的宇宙都会有死的一天。人类的一生，与这些相比的话——不过是一眨眼那么短暂而已。在那样短暂的时光中，人们诞生、欢笑、流泪、战斗、受伤、欢喜、悲伤……憎恨某人，爱上某人，一切的一切，都只是刹那的邂逅。终究将归入死的永眠。这世界上，有些人有多冷漠，有些人就有多温暖。你看，这就是人性的卑微。极力的掩饰自己的肮脏，却又在被戳破后恼羞成怒。就算不快乐也不要皱眉，因为你永远不知道，谁会爱上你的笑容。", character: "沙加", anime: "《圣斗士星矢》", likes: 0 },
-            { text: "我们只是活着就已经竭尽全力了。", anime: "《银魂》", likes: 0 },
-            { text: "我们终会相知，在那悠远的苍穹。", anime: "《缘之空》", likes: 0 },
-            { text: "零食就是正义！", character: "紫原敦", anime: "《黑子的篮球》", likes: 0 },
-            { text: "把已经失去的东西重新变得有意义的职业只有两个，作家和侦探。只有作家才能在梦想中将其复活，只有侦探才能将其从坟墓中挖掘出来还原成信息。", character: "爱丽丝", anime: "《神的记事本》", likes: 0 },
-            { text: "不抵抗就不会死，为什么你就是不明白！", character: "卡缪·维丹", anime: "《机动战士 Z 高达》", likes: 0 },
-            { text: "没有什么大不了这句话，只有当事者才有资格说", anime: "《悠久之翼》", likes: 0 },
-            { text: "能哭的地方，只有厕所，和爸爸的怀里。", anime: "《clannad》", likes: 0 },
-            { text: "谁都无法相信未来，谁都无法接受未来。", character: "晓美焰", anime: "《魔法少女小圆》", likes: 0 },
-            { text: "要得到幸福的话，就需要与之相应的努力，也就是代价。不是经常说人生是正负和零么！有好事也有痛苦的事，有痛苦的事也有好事。不过这是错的。为了变得幸福，作为代价，必须背负与其同等的不幸。也就是说为了好事情，必须要忍受坏事情。所谓有痛苦的事就有好事什么的，并不是含有乐观意味的话。反过来说，在高的地位上的话，对工作就有相应的高要求对吧。要是不能满足这种高要求就是不诚实的人。再进一步反过来说，要把自己置于不幸中的话，自己就必须放弃一定程度的努力。", character: "壹原侑子", anime: "《xxxHolic》", likes: 0 },
-            { text: "这样被诅咒的人生，怎么能接受呢。", character: "仲村由理", anime: "《angelbeats》", likes: 0 },
-            { text: "人类这种生物，有时候是连短短的十分钟也等不起的！", character: "仲村由理", anime: "《Angel Beats!》", likes: 0 },
-            { text: "有树叶飞舞的地方，就会有火在燃烧，火的意志照耀着村子，就会有更多的树叶发芽，他们会承载着火的意志，把信念带向远方。", anime: "《火影忍者》", likes: 0 },
-            { text: "所谓的觉悟、就是在黑暗的荒野中开辟前行的道路", character: "乔鲁诺乔班纳", anime: "《JOJO 的奇妙冒险》", likes: 0 },
-            { text: "没有痛苦相伴的教训是毫无意义的，因为、人倘若不牺牲些什么，就什么也不可能得到。但是，当直面这些痛苦、克服它们的时候，人将获得不输给任何事物的坚韧的心。没错，钢铁一般的心。", character: "爱德华", anime: "《钢之炼金术师》", likes: 0 },
-            { text: "雪为什么是白色的？因为它们忘记了自己本身的颜色……", character: "C.C", anime: "《反叛的鲁路修》", likes: 0 },
-            { text: "何等失态，罪该万死", character: "提耶利亚", anime: "《高达 OO》", likes: 0 },
-            { text: "一个人才会混乱的吧，即使是在黑暗中，只要有个人和自己一起走的话，就会安心很多，也一定会找到答案的。", anime: "《TrueTears》", likes: 0 },
-            { text: "如果每个人都能为自己所爱的事情付诸努力，那崭新的地方定是梦想的终点", anime: "《LOVE LIVE》", likes: 0 },
-            { text: "我错了，善良没有任何意义 渣滓必须受到歧视 我... 要成为王", character: "樱满集", anime: "《罪恶王冠》", likes: 0 },
-            { text: "萝莉控不是病，是人生态度啊！", character: "安藤寿来", anime: "《日常系的异能战斗》", likes: 0 },
-            { text: "所谓的王者，就是要活的比任何人都要耀眼，成为万民敬仰的存在。", character: "伊斯坎达尔", anime: "《Fate Zero》", likes: 0 },
-            { text: "瞬间的犹豫可是会丧命的，所以我决不会犹豫。", character: "夏尔", anime: "《黑执事》", likes: 0 },
-            { text: "1000 减 7 等于多少？", character: "金木研", anime: "《东京喰种》", likes: 0 },
-            { text: "我们总是在意错过了多少，却不注意自己拥有多少。", anime: "《未闻花名》", likes: 0 },
-            { text: "人没有牺牲就没有获得, 如果要获得什么就必须付出同等的代价。", anime: "《钢之炼金术师》", likes: 0 },
-            { text: "男人变态有什么错！", character: "前原圭一", anime: "《寒蝉鸣啼之时》", likes: 0 },
-            { text: "苦难算什么，我本来就喜欢走在修罗之路上", character: "索隆", anime: "《海贼王》", likes: 0 },
-            { text: "大家回答我　为什么要低头，重复一遍　为什么要低头，我们是弱者！现在如此　过去也如此！是的　不是什么都没有改变吗！强者模仿弱者夺来的武器　是无法发挥出其真正的力量的，要说为什么的话　我们的武器本质在于，那弱小到悲屈的软弱啊！我在此强调，我们是弱者！我们宣誓作为弱者活下去，像弱者一样战斗然后已弱者的方式消灭强者！就像过去一样　今后也会贯彻到底！承认吧　我们是最弱的种族！正因为我们天生什么都没有，所以才能驾驭一切的，最弱的种族！", character: "空", anime: "《no game no life》", likes: 0 },
-            { text: "不能逃避，不能逃避，不能逃避。", character: "碇真嗣", anime: "《EVA》", likes: 0 },
-            { text: "关于自己的生活，我和你都不是读者，而是作者。至少结局，还是能自己说了算的。", character: "银桑", anime: "《银魂》", likes: 0 },
-            { text: "能原谅女人谎话的————才是男人！", character: "香吉士", anime: "《海贼王》", likes: 0 },
-            { text: "群聚的都是弱者。弱小的草食动物才喜欢群聚。", anime: "《家庭教师》", likes: 0 },
-            { text: "遥远的不是距离，而是次元啊！", character: "安艺伦也", anime: "《路人女主的养成方法》", likes: 0 },
-            { text: "即使是走过无数次的路，也能走到从未踏足过的地方，正因为是走过无数次的路，景色才会变幻万千，光是这样还不足够吗？因为只是这样，所以才不足够吗？", character: "函南优一", anime: "《空中杀手》", likes: 0 },
-            { text: "错的不是我，而是这个世界。", anime: "《東京喰种》", likes: 0 },
-            { text: "时间可以冲淡一切，但，我並不想用时间来磨平伤口。", anime: "《黑执事》", likes: 0 },
-            { text: "不要哀求，学会争取若是如此，终有所获。", character: "阿德洛克•萨斯顿", anime: "《交响诗篇》", likes: 0 },
-            { text: "秒速 5 厘米，那是樱花飘落的速度，那么怎样的速度，才能走完我与你之间的距离？", anime: "《秒速五厘米》", likes: 0 },
-            { text: "一切都是 Steins Gate 的选择！", anime: "《命运石之门》", likes: 0 },
-            { text: "可能会有迷茫的時候，也可能会有因为不如意而觉得烦躁的时候。无论是谁都会遇到低谷，但只有跨越低谷的人才能得到大家的认可。", anime: "《花开物语》", likes: 0 },
-            { text: "明明感觉距离很近 但伸手却又抓不到 即使这样 即使望尘莫及 亦有留在心中的东西 曾身处同一时间层 曾仰望过同一样东西 只要记着这些 就算相互远离 也依然可以相信我们还是同在 现在要不停蹦跑 只要目标远大 总有一天 会赶上那目标", anime: "《fate/stay night》", likes: 0 },
-            { text: "没必要的事不做，必要的事尽快做。", character: "折木奉太郎", anime: "《冰菓》", likes: 0 },
-            { text: "就算悲伤难抑，遍体鳞伤的处于谷底，也不能停下演奏，只有这样我们才是真正活着的。-你真的可以忘记么？", anime: "《四月是你的谎言》", likes: 0 },
-            { text: "这个世界上没有偶然，有的只是必然", character: "壹原侑子", anime: "《xxxholic》", likes: 0 },
-            { text: "苦恼着，歇斯底里着，痛苦着，不断挣扎的数月时间，这一切会在未来的某一瞬间得到回报。我们或许就是被那个瞬间迷住的，一种无可救药的生物吧。", anime: "《四月是你的谎言》", likes: 0 },
-            { text: "人类的赞歌就是勇气的赞歌！", anime: "《jojo 的奇妙冒险》", likes: 0 },
-            { text: "藏好了吗？", anime: "《未闻花名》", likes: 0 },
-            { text: "什么也无法舍弃的人，就什么也无法改变。", character: "埃尔文斯密斯", anime: "《进击的巨人》", likes: 0 }
-        ];
-       let userQuotes = JSON.parse(localStorage.getItem('userQuotes')) || [];
-        
-        function saveQuotes() {
-            try {
-                localStorage.setItem('quotes', JSON.stringify(quotes));
-            } catch (error) {
-                console.error('保存台词失败：', error);
-            }
-        }
-        function saveUserQuotes() {
-            try {
-                localStorage.setItem('userQuotes', JSON.stringify(userQuotes));
-            } catch (error) {
-                console.error('保存用户台词失败：', error);
-            }
-        }
-        
-        function generateRandomQuote() {
-            const allQuotes = [...quotes, ...userQuotes];
-            if (allQuotes.length === 0) {
-                quoteContainer.innerHTML = `<p class='quote'>暂无台词，快来提交吧！</p>`;
-                return;
-            }
-            const randomIndex = Math.floor(Math.random() * allQuotes.length);
-            displayQuote(allQuotes[randomIndex]);
-        }
-        
-        function displayQuote(quote) {
-            quoteContainer.innerHTML = `
-                <p class='quote'>${quote.text}</p>
-                <div class='source'>
-                    ${quote.character ? `<span class='character-name'>${quote.character}</span>` : ''}
-                    ${quote.anime ? `<span class='anime-title'>${quote.anime}</span>` : ''}
-                </div>
-                <div style="margin-top: 15px;">
-                    <span class='heart ${quote.liked ? 'liked' : ''}'><i class="fas fa-heart"></i> ${quote.likes}</span>
-                </div>
-            `;
-            const heart = quoteContainer.querySelector('.heart');
-            heart.addEventListener('click', () => {
-                quote.liked = !quote.liked;
-                quote.likes = quote.liked ? quote.likes + 1 : quote.likes - 1;
-                saveQuotes();
-                saveUserQuotes();
-                displayQuote(quote);
-                updateLeaderboard();
-            });
-        }
-        
-        function submitUserQuote() {
-            const quoteText = userQuote.value.trim();
-            const animeName = userAnime.value.trim();
-            if (!quoteText || !animeName) {
-                alert('请填写完整的台词和动漫名！');
-                return;
-            }
-            const newQuote = {
-                text: quoteText,
-                character: userCharacter.value.trim(),
-                anime: animeName,
-                likes: 0,
-                liked: false
-            };
-            userQuotes.push(newQuote);
-            saveUserQuotes();
-            userQuote.value = userCharacter.value = userAnime.value = '';
-            alert('台词已提交！');
-            updateLeaderboard();
-        }
-        
-        function updateLeaderboard() {
-            leaderboard.innerHTML = '';
-            const sortedQuotes = [...quotes, ...userQuotes].sort((a, b) => b.likes - a.likes).slice(0, 5);
-            if (sortedQuotes.length === 0) {
-                leaderboard.innerHTML = `<p>暂无数据，快来提交台词吧！</p>`;
-                return;
-            }
-            sortedQuotes.forEach((q, index) => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                item.innerHTML = `
-                    <div style="font-weight: bold; margin-right: 10px; color: ${index < 3 ? ['gold', 'silver', '#cd7f32'][index] : 'var(--text-dark)'}">${index + 1}</div>
-                    <div class="leaderboard-quote">${q.text}</div>
-                    <div class="leaderboard-likes">
-                        <i class="fas fa-heart"></i>
-                        <span>${q.likes}</span>
-                    </div>
-                `;
-                leaderboard.appendChild(item);
-            });
-        }
-        
-        generateBtn.addEventListener('click', generateRandomQuote);
-        submitBtn.addEventListener('click', submitUserQuote);
-        updateLeaderboard();
-    </script>
+
+<body class="hub-bg min-h-screen flex items-center justify-center p-4">
+
+
+
+    <!-- Main Content Container (Responsive Card) -->
+
+    <div class="w-full max-w-xl bg-gray-800 p-8 md:p-10 rounded-xl shadow-2xl border border-gray-700">
+
+        
+
+        <!-- Header -->
+
+        <header class="text-center mb-10">
+
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2">
+
+                Project Hub
+
+            </h1>
+
+            <p class="text-gray-400 text-lg">
+
+                Explore the features and tools I've developed.
+
+            </p>
+
+        </header>
+
+
+
+        <!-- Publisher Content Section -->
+
+        <section class="mb-10 p-5 bg-gray-700 rounded-lg border border-gray-600">
+
+            <h2 class="text-2xl font-bold text-indigo-400 mb-3">
+
+                A Message from the Developer
+
+            </h2>
+
+            <p class="text-gray-300 mb-3">
+
+                Welcome! This hub is where I showcase various small web applications and interactive projects I create in my free time. 
+                你好！这里可以通往我的各种没用网站。
+            </p>
+
+            <p class="text-gray-300">
+
+                You can navigate to my current project.
+                欢迎登录我目前的网站。
+
+            </p>
+
+        </section>
+
+        
+
+        <!-- Feature Buttons Grid -->
+
+        <div class="space-y-6">
+
+            
+
+            <!-- Link to your known good file. REMEMBER to use the correct path/filename. -->
+
+            <!-- Note: File paths with spaces often need to be URL encoded: 'anime%20quote%20web2.html' -->
+
+            <a href="anime quote.html" class="block">
+
+                <button class="w-full flex items-center justify-between p-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+
+                    <span class="text-xl">🌟 Anime Quote Generator</span>
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+
+                    </svg>
+
+                </button>
+
+            </a>
+
+
+
+            <!-- Placeholder -->
+
+            <a href="#" onclick="showComingSoon('Future Project Idea')" class="block">
+
+                <button class="w-full flex items-center justify-between p-5 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+
+                    <span class="text-xl">🚀 Future Project Idea</span>
+
+                    <span class="text-sm px-3 py-1 bg-yellow-500 rounded-full text-gray-900 font-bold">Soon</span>
+
+                </button>
+
+            </a>
+
+            
+
+        </div>
+
+        
+
+        <!-- Footer / Credits -->
+
+        <footer class="text-center mt-10 text-gray-500">
+
+            <p>&copy; 2025 Abyss_123's Projects. All rights reserved.</p>
+
+        </footer>
+
+        
+
+    </div>
+
+
+
+    <!-- Custom Modal for Alerts -->
+
+    <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50 transition-opacity duration-300">
+
+        <div class="bg-gray-900 p-6 rounded-xl max-w-sm w-full shadow-2xl border border-gray-700">
+
+            <h3 class="text-xl font-bold text-yellow-400 mb-4">Coming Soon!</h3>
+
+            <p id="alert-message" class="text-gray-300 mb-6"></p>
+
+            <button onclick="document.getElementById('alert-modal').classList.add('hidden')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-150">
+
+                Got It
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        function showComingSoon(featureName) {
+
+            // Prevent default link action
+
+            event.preventDefault(); 
+
+            
+
+            const modal = document.getElementById('alert-modal');
+
+            const message = document.getElementById('alert-message');
+
+            
+
+            message.textContent = `${featureName} is still under development. Check back later!`;
+
+            
+
+            // Show the modal
+
+            modal.classList.remove('hidden');
+
+            modal.classList.add('flex');
+
+        }
+
+    </script>
+
 </body>
+
 </html>
