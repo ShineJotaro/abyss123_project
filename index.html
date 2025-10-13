@@ -4,209 +4,78 @@
 
 <head>
 
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Abyss_123 Project Hub | Home</title>
+    <title>Abyss_123 Project Hub | Home</title>
 
-    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
 
-    <!-- Use Inter font family -->
+        body {
 
-    <style>
+            font-family: 'Inter', sans-serif;
 
-        body {
+        }
 
-            font-family: 'Inter', sans-serif;
+        /* 恢复 Custom gradient background for a modern look */
 
-        }
+        .hub-bg {
 
-        /* Custom gradient background for a modern look */
+            background: linear-gradient(135deg, #1f2937, #111827); /* 深色渐变 */
 
-        .hub-bg {
+        }
 
-            background: linear-gradient(135deg, #1f2937, #111827);
-
-        }
-
-    </style>
+    </style>
 
 </head>
 
 <body class="hub-bg min-h-screen flex items-center justify-center p-4">
 
 
+    <div class="w-full max-w-xl bg-gray-800 p-8 md:p-10 rounded-xl shadow-2xl border border-gray-700">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2">
+                Project Hub
+            </h1>
+            <p class="text-gray-400 text-lg">
+                Explore the features and tools I've developed.
+            </p>
+        </header>
 
-    <!-- Main Content Container (Responsive Card) -->
-
-    <div class="w-full max-w-xl bg-gray-800 p-8 md:p-10 rounded-xl shadow-2xl border border-gray-700">
-
-        
-
-        <!-- Header -->
-
-        <header class="text-center mb-10">
-
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2">
-
-                Project Hub
-
-            </h1>
-
-            <p class="text-gray-400 text-lg">
-
-                Explore the features and tools I've developed.
-
-            </p>
-
-        </header>
-
-
-
-        <!-- Publisher Content Section -->
-
-        <section class="mb-10 p-5 bg-gray-700 rounded-lg border border-gray-600">
-
-            <h2 class="text-2xl font-bold text-indigo-400 mb-3">
-
-                A Message from the Developer
-
-            </h2>
-
-            <p class="text-gray-300 mb-3">
-
-                Welcome! This hub is where I showcase various small web applications and interactive projects I create in my free time. 
+        <section class="mb-10 p-5 bg-gray-700 rounded-lg border border-gray-600 text-center">
+            <h2 class="text-2xl font-bold text-indigo-400 mb-3">
+                A Message from the Developer
+            </h2>
+            <p class="text-gray-300 mb-3">
+                Welcome! This hub is where I showcase various small web applications and interactive projects I create in my free time. 
                 你好！这里可以通往我的各种没用网站。
-            </p>
-
-            <p class="text-gray-300">
-
-                You can navigate to my current project.
+            </p>
+            <p class="text-gray-300">
+                You can navigate to my current project.
                 欢迎登录我目前的网站。
-
-            </p>
-
-        </section>
-
-        
-
-        <!-- Feature Buttons Grid -->
-
-        <div class="space-y-6">
-
-            
-
-            <!-- Link to your known good file. REMEMBER to use the correct path/filename. -->
-
-            <!-- Note: File paths with spaces often need to be URL encoded: 'anime%20quote%20web2.html' -->
-
-            <a href="anime quote.html" class="block">
-
-                <button class="w-full flex items-center justify-between p-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
-
-                    <span class="text-xl">🌟 Anime Quote Generator</span>
-
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-
-                    </svg>
-
-                </button>
-
-            </a>
-
-
-
-            <!-- Placeholder -->
-
-            <a href="#" onclick="showComingSoon('Future Project Idea')" class="block">
-
-                <button class="w-full flex items-center justify-between p-5 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
-
-                    <span class="text-xl">🚀 Future Project Idea</span>
-
-                    <span class="text-sm px-3 py-1 bg-yellow-500 rounded-full text-gray-900 font-bold">Soon</span>
-
-                </button>
-
-            </a>
-
-            
-
-        </div>
-
-        
-
-        <!-- Footer / Credits -->
-
-        <footer class="text-center mt-10 text-gray-500">
-
-            <p>&copy; 2025 Abyss_123's Projects. All rights reserved.</p>
-
-        </footer>
-
-        
-
-    </div>
-
-
-
-    <!-- Custom Modal for Alerts -->
-
-    <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50 transition-opacity duration-300">
-
-        <div class="bg-gray-900 p-6 rounded-xl max-w-sm w-full shadow-2xl border border-gray-700">
-
-            <h3 class="text-xl font-bold text-yellow-400 mb-4">Coming Soon!</h3>
-
-            <p id="alert-message" class="text-gray-300 mb-6"></p>
-
-            <button onclick="document.getElementById('alert-modal').classList.add('hidden')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-150">
-
-                Got It
-
-            </button>
-
-        </div>
-
-    </div>
-
-
-
-    <script>
-
-        function showComingSoon(featureName) {
-
-            // Prevent default link action
-
-            event.preventDefault(); 
-
-            
-
-            const modal = document.getElementById('alert-modal');
-
-            const message = document.getElementById('alert-message');
-
-            
-
-            message.textContent = `${featureName} is still under development. Check back later!`;
-
-            
-
-            // Show the modal
-
-            modal.classList.remove('hidden');
-
-            modal.classList.add('flex');
-
-        }
-
-    </script>
-
-</body>
-
-</html>
+            </p>
+        </section>
+        
+        <div class="space-y-6">
+            
+            <a href="anime quote.html" class="block">
+                <button class="w-full flex items-center justify-between p-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+                    <span class="text-xl">🌟 Anime Quote Generator</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </a>
+
+            <a href="#" onclick="showComingSoon('Future Project Idea')" class="block">
+                <button class="w-full flex items-center justify-between p-5 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-lg transform transition duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]">
+                    <span class="text-xl">🚀 Future Project Idea</span>
+                    <span class="text-sm px-3 py-1 bg-yellow-500 rounded-full text-gray-900 font-bold">Soon</span>
+                </button>
+            </a>
+            
+        </div>
