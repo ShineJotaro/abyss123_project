@@ -841,13 +841,15 @@
             document.getElementById('loading-indicator').classList.remove('hidden');
             document.getElementById('app-container').classList.remove('hidden');
 
-            try {
-                let firebaseConfig = {};
-                try {
-                    firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-                } catch (parseError) {
-                    console.error("Firebase config parse error:", parseError);
-                }
+           export const firebaseConfig = {
+   
+    apiKey: "AIzaSyCD7f8ZnlXZuI_DiBc_M2c9jl44WajJMhw",
+    authDomain: "abyss123-project.firebaseapp.com",
+    projectId: "abyss123-project",
+    storageBucket: "abyss123-project.firebasestorage.app",
+    messagingSenderId: "233505718695",
+    appId: "1:233505718695:web:1a62ca261f9ebd9beaf682"
+  };
                 
                 if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
                     throw new Error('Firebase configuration is missing required fields (projectId, apiKey). Please ensure the app is properly deployed in Firebase Canvas.');
@@ -2738,4 +2740,5 @@
     </script>
 </body>
 </html>
+
 
