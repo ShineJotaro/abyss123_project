@@ -203,7 +203,6 @@
             </div>
         </nav>
 
-
         <!-- 餐厅评鉴列表 -->
         <section class="mt-8">
             <h2 id="reviews-header" class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">所有评鉴 (全部)</h2>
@@ -240,7 +239,6 @@
                 </script>
             </div>
         </div>
-
     </div>
 
     <!-- 模块脚本 2: 主要应用逻辑 -->
@@ -250,46 +248,6 @@ import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, updateDoc, d
 
 // 获取全局变量
 const { initializeApp, signInAnonymously, signInWithCustomToken } = window.firebase;
-
-// --- 缺失的函数定义 ---
-const signInWithGoogle = async () => {
-    try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        
-        // 设置管理员检查
-        const ADMIN_EMAIL = 'jefflai123123@gmail.com';
-        isAdmin = user.email === ADMIN_EMAIL;
-        isLoggedIn = true;
-        currentUserId = user.uid;
-        
-        updateUIBasedOnAuth();
-        showModal('登录成功', isAdmin ? '管理员已登录' : `欢迎 ${user.email}`);
-        
-    } catch (error) {
-        console.error('Google 登录失败:', error);
-        showModal('登录失败', '无法通过 Google 登录，请重试。');
-    }
-};
-
-const handleSignOut = async () => {
-    try {
-        await signOut(auth);
-        isLoggedIn = false;
-        isAdmin = false;
-        currentUserId = null;
-        updateUIBasedOnAuth();
-        showModal('登出成功', '您已成功登出。');
-    } catch (error) {
-        console.error('登出失败:', error);
-        showModal('登出失败', '登出过程中出现错误。');
-    }
-};
-
-// 挂载到全局
-window.signInWithGoogle = signInWithGoogle;
-window.handleSignOut = handleSignOut;
 
 // --- 评分配置映射 (RATING_CONFIG) ---
 const RATING_CONFIG = {
@@ -303,13 +261,13 @@ const RATING_CONFIG = {
 // --- 全局状态 & 常量 ---
 let db;
 let auth;
-let ADMIN_ID = 'unknown'; 
+let ADMIN_EMAIL = 'jefflai123123@gmail.com'; // 指定管理员邮箱
 let isAuthReady = false;
-let currentUserId = null;
+let currentUserEmail = null; // 改为存储邮箱而不是ID
 let isLoggedIn = false;
 let isAdmin = false;
-let activeFilterTag = 'All'; // 当前筛选的标签
-let allReviewsData = []; // 存储所有评论的原始数据
+let activeFilterTag = 'All';
+let allReviewsData = [];
 
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 const firebaseConfig = {
@@ -351,7 +309,7 @@ document.getElementById('modal-close-btn').addEventListener('click', () => {
     document.getElementById('modal-backdrop').classList.remove('flex');
 });
 
-// T&C 模态框检查 (修复版本)
+// T&C 模态框检查
 const checkTermsAndConditions = () => {
     const accepted = sessionStorage.getItem('T&C_Accepted') === 'true';
     const termsModalBackdrop = document.getElementById('terms-and-conditions-modal');
@@ -363,7 +321,6 @@ const checkTermsAndConditions = () => {
         document.getElementById('loading-indicator').classList.remove('hidden'); 
         initializeFirebase();
     } else {
-        // 显示 T&C 模态框
         termsModalBackdrop.classList.remove('hidden');
         
         // Handle Accept
@@ -376,7 +333,6 @@ const checkTermsAndConditions = () => {
         
         // Handle Decline - 跳转到首页
         declineBtn.addEventListener('click', () => {
-            // 用户选择拒绝，跳转到首页
             window.location.href = 'index.html';
         }, { once: true });
     }
@@ -389,24 +345,19 @@ const initializeFirebase = async () => {
         db = getFirestore(app);
         auth = getAuth(app);
         
-        if (initialAuthToken) {
-            const userCredential = await signInWithCustomToken(auth, initialAuthToken);
-            ADMIN_ID = userCredential.user.uid;
-        } else {
-            await signInAnonymously(auth);
+        // 检查本地存储中是否有用户邮箱
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+            currentUserEmail = savedEmail;
+            isLoggedIn = true;
+            isAdmin = (savedEmail === ADMIN_EMAIL);
         }
+
+        // 匿名登录以访问Firestore
+        await signInAnonymously(auth);
 
         onAuthStateChanged(auth, (user) => {
             isAuthReady = true;
-            if (user) {
-                currentUserId = user.uid;
-                isLoggedIn = !user.isAnonymous;
-                isAdmin = user.uid === ADMIN_ID && initialAuthToken !== undefined; 
-            } else {
-                currentUserId = crypto.randomUUID(); 
-                isLoggedIn = false;
-                isAdmin = false;
-            }
             updateUIBasedOnAuth();
             startReviewListener();
         });
@@ -420,6 +371,42 @@ const initializeFirebase = async () => {
     }
 };
 
+// --- 认证相关函数 ---
+const signInWithEmailOnly = async () => {
+    const email = prompt('请输入您的电子邮件地址以登录:');
+    if (!email) return;
+    
+    // 简单的邮箱验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showModal('输入错误', '请输入有效的电子邮件地址。');
+        return;
+    }
+    
+    // 保存邮箱到本地存储
+    localStorage.setItem('userEmail', email);
+    currentUserEmail = email;
+    isLoggedIn = true;
+    isAdmin = (email === ADMIN_EMAIL);
+    
+    updateUIBasedOnAuth();
+    showModal('登录成功', isAdmin ? `管理员 ${email} 已登录` : `欢迎 ${email}`);
+};
+
+const handleSignOut = () => {
+    localStorage.removeItem('userEmail');
+    currentUserEmail = null;
+    isLoggedIn = false;
+    isAdmin = false;
+    
+    updateUIBasedOnAuth();
+    showModal('登出成功', '您已成功登出。');
+};
+
+// 挂载到全局
+window.signInWithEmailOnly = signInWithEmailOnly;
+window.handleSignOut = handleSignOut;
+
 // --- 更新 UI 基于认证状态 ---
 const updateUIBasedOnAuth = () => {
     const authStatusDiv = document.getElementById('auth-status');
@@ -429,7 +416,7 @@ const updateUIBasedOnAuth = () => {
         authStatusDiv.innerHTML = `
             <div class="flex items-center space-x-2">
                 <span class="text-sm font-medium text-gray-600">
-                    ${isAdmin ? '👑 管理员' : '👋 用户'}
+                    ${isAdmin ? '👑 管理员: ' : '👋 用户: '} ${currentUserEmail}
                 </span>
                 <button onclick="handleSignOut()" class="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition">登出</button>
             </div>`;
@@ -437,14 +424,318 @@ const updateUIBasedOnAuth = () => {
     } else {
         authStatusDiv.innerHTML = `
             <div class="flex items-center space-x-2">
-                <button onclick="signInWithGoogle()" class="px-3 py-1 bg-primary-blue text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition">Google 登录</button>
+                <button onclick="signInWithEmailOnly()" class="px-3 py-1 bg-primary-blue text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition">Email 登录</button>
             </div>`;
         adminFormContainer.classList.add('hidden');
     }
 };
 
-// 其余的代码保持不变...
-// [保留您原有的标签筛选、渲染评论、表单处理等函数]
+// --- 标签筛选逻辑 ---
+const setActiveFilter = (tag) => {
+    activeFilterTag = tag;
+    document.getElementById('reviews-header').textContent = `所有评鉴 (${tag === 'All' ? '全部' : tag})`;
+    renderReviews(allReviewsData);
+    renderFilterNavbar();
+}
+
+const renderFilterNavbar = () => {
+    const container = document.getElementById('filter-navbar');
+    container.innerHTML = '';
+    
+    // 1. All 按钮
+    const allButton = document.createElement('button');
+    allButton.textContent = 'All (全部)';
+    allButton.className = `tag-btn ${activeFilterTag === 'All' ? 'tag-active bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`;
+    allButton.addEventListener('click', () => setActiveFilter('All'));
+    container.appendChild(allButton);
+    
+    // 2. 国家/地区按钮
+    Object.keys(DEFAULT_TAGS).forEach(country => {
+        const states = DEFAULT_TAGS[country];
+        
+        if (states.length > 1) {
+            const countryDiv = document.createElement('div');
+            countryDiv.className = 'relative dropdown-hover';
+            
+            const countryButton = document.createElement('button');
+            countryButton.textContent = country;
+            const isActiveCountry = activeFilterTag === country || states.includes(activeFilterTag);
+            
+            countryButton.className = `tag-btn flex items-center ${isActiveCountry ? 'tag-active' : 'bg-primary-blue/10 text-primary-blue hover:bg-primary-blue/20'}`;
+            countryButton.addEventListener('click', () => setActiveFilter(country));
+
+            countryButton.innerHTML += `
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            `;
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'dropdown-menu absolute z-20 mt-2 w-48 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100';
+            
+            states.forEach(state => {
+                const stateButton = document.createElement('button');
+                stateButton.textContent = state;
+                stateButton.className = `w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ${activeFilterTag === state ? 'bg-primary-blue text-white hover:bg-primary-blue/90' : ''}`;
+                stateButton.addEventListener('click', () => setActiveFilter(state));
+                dropdown.appendChild(stateButton);
+            });
+
+            countryDiv.appendChild(countryButton);
+            countryDiv.appendChild(dropdown);
+            container.appendChild(countryDiv);
+            
+        } else {
+            const countryButton = document.createElement('button');
+            countryButton.textContent = country;
+            countryButton.className = `tag-btn ${activeFilterTag === country ? 'tag-active bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`;
+            countryButton.addEventListener('click', () => setActiveFilter(country));
+            container.appendChild(countryButton);
+        }
+    });
+};
+
+// --- 渲染评鉴列表 ---
+const renderReviews = (reviews) => {
+    const listContainer = document.getElementById('reviews-list');
+    listContainer.innerHTML = '';
+    
+    // 1. 过滤：只显示管理员发布的评论
+    const adminReviews = reviews.filter(review => review.creatorId === ADMIN_EMAIL);
+    
+    // 2. 标签筛选
+    const filteredByTag = adminReviews.filter(review => {
+        if (activeFilterTag === 'All') return true;
+        
+        const reviewTags = Array.isArray(review.tags) ? review.tags.map(t => t.toLowerCase()) : [];
+        return reviewTags.includes(activeFilterTag.toLowerCase());
+    });
+    
+    // 3. 处理空状态
+    if (filteredByTag.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('empty-state').querySelector('p').textContent = 
+            activeFilterTag === 'All' ? '管理员尚未发布任何评鉴。' : `在 ${activeFilterTag} 区域暂无评鉴。`;
+        return;
+    }
+    document.getElementById('empty-state').classList.add('hidden');
+
+    // 4. 渲染评论
+    filteredByTag.forEach(review => {
+        const reviewStatus = review.status;
+        const config = RATING_CONFIG[reviewStatus] || RATING_CONFIG['Can eat'];
+        const statusColor = config.color;
+        const statusText = config.text;
+        const statusEmoji = config.emoji;
+        
+        const likeCount = review.likedBy ? review.likedBy.length : 0;
+        const isLiked = review.likedBy && review.likedBy.includes(currentUserEmail);
+            
+        const likeText = likeCount > 0 
+            ? `${likeCount} 位用户认为有用`
+            : 'Found this useful';
+            
+        const likeButtonDisabled = !isLoggedIn;
+        const likeButtonClass = isLiked 
+            ? 'bg-useful text-white hover:bg-indigo-700' 
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+        
+        const deleteButtonHtml = isAdmin ? `
+            <button class="delete-btn px-3 py-1 text-sm bg-admin-red text-white rounded-lg hover:bg-red-700 transition" data-id="${review.id}">
+                删除
+            </button>
+        ` : '';
+        
+        const tagHtml = (review.tags && review.tags.length > 0) 
+            ? review.tags.map(tag => `<span class="inline-block bg-primary-blue/10 text-primary-blue text-xs font-medium mr-1 px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')
+            : '';
+
+        const reviewElement = document.createElement('div');
+        reviewElement.className = 'bg-white p-6 rounded-xl shadow-lg border-l-4 ' + statusColor.replace('bg-', 'border-');
+        reviewElement.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="inline-block px-3 py-1 text-sm font-semibold rounded-full text-white ${statusColor}">
+                        ${statusEmoji} ${statusText}
+                    </span>
+                    <h3 class="text-2xl font-extrabold text-gray-900 mt-2">${review.restaurantName}</h3>
+                    <p class="text-gray-500 text-sm mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1 text-primary-blue" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        ${review.address || '地址未提供'}
+                    </p>
+                </div>
+                ${deleteButtonHtml}
+            </div>
+
+            ${review.imageUrl ? `
+                <img src="${review.imageUrl}" alt="${review.restaurantName} 图片" class="w-full h-48 object-cover rounded-lg mb-4 shadow-inner" onerror="this.onerror=null;this.src='https://placehold.co/600x200/cccccc/333333?text=图片加载失败';">
+            ` : ''}
+
+            <p class="text-gray-700 mb-4">${review.comment}</p>
+            
+            <!-- 标签显示 -->
+            <div class="mb-4">${tagHtml}</div>
+
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                <button id="like-btn-${review.id}" data-liked="${isLiked}" 
+                    class="px-4 py-2 text-sm font-semibold rounded-full transition duration-150 flex items-center space-x-2 ${likeButtonClass} ${likeButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}"
+                    title="${likeButtonDisabled ? '请登录以使用此功能' : 'Found this useful'}"
+                    ${likeButtonDisabled ? 'disabled' : ''}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${isLiked ? 'text-white' : 'text-useful'}" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.433a2.5 2.5 0 00.953 1.956 2.5 2.5 0 001.996.183 2.5 2.5 0 002.825-1.042l3.4-6a2.5 2.5 0 00.94-1.879V5.75a1.75 1.75 0 10-3.5 0v2.75l-3.4 6c-.15.263-.448.425-.774.425-.333 0-.638-.17-.788-.445l-.462-.871c-.08-.15-.17-.306-.27-.47L6 10.333z" />
+                    </svg>
+                    <span class="hidden sm:inline-block">${likeText}</span>
+                    <span class="sm:hidden">${likeText}</span>
+                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full ${isLiked ? 'bg-indigo-500' : 'bg-useful text-white'}">${likeCount}</span>
+                </button>
+            </div>
+        `;
+        listContainer.appendChild(reviewElement);
+    });
+
+    // 重新绑定事件监听器
+    filteredByTag.forEach(review => {
+        if (isAdmin) {
+            const deleteButton = document.querySelector(`.delete-btn[data-id="${review.id}"]`);
+            if (deleteButton) {
+                deleteButton.addEventListener('click', () => handleDelete(review.id, review.restaurantName));
+            }
+        }
+        
+        const likeButton = document.getElementById(`like-btn-${review.id}`);
+        if (likeButton && isLoggedIn) { 
+            likeButton.addEventListener('click', (e) => {
+                const isLiked = e.currentTarget.getAttribute('data-liked') === 'true';
+                handleLike(review.id, isLiked);
+            });
+        }
+    });
+};
+
+// 监听 Firestore 变化
+const startReviewListener = () => {
+     const reviewsColRef = collection(db, getCollectionPath());
+
+    onSnapshot(reviewsColRef, (snapshot) => {
+        const reviews = [];
+        snapshot.forEach(doc => {
+            reviews.push({ id: doc.id, ...doc.data() });
+        });
+        // 排序：最新的在最前面
+        reviews.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+        
+        allReviewsData = reviews;
+        renderReviews(allReviewsData);
+        renderFilterNavbar();
+    }, (error) => {
+        console.error("监听评论失败:", error);
+        showModal("数据错误", "无法实时获取评论数据。");
+    });
+}
+
+// 处理表单提交 (仅管理员)
+const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!isAdmin) {
+        showModal("权限不足", "只有管理员才能添加新的餐厅评鉴。");
+        return;
+    }
+
+    const restaurantName = document.getElementById('restaurantName').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const imageUrl = document.getElementById('imageUrl').value.trim();
+    const status = document.getElementById('status').value;
+    const comment = document.getElementById('comment').value.trim();
+    const tagsInput = document.getElementById('tags').value.trim();
+
+    if (!restaurantName || !status || !comment || !address) {
+        showModal("输入错误", "请填写餐厅名称、地址、状态和评论。");
+        return;
+    }
+    
+    const tagsArray = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+    try {
+        const reviewsColRef = collection(db, getCollectionPath());
+        await addDoc(reviewsColRef, {
+            restaurantName,
+            address,
+            imageUrl,
+            status,
+            comment,
+            tags: tagsArray, 
+            creatorId: ADMIN_EMAIL, // 使用邮箱作为创建者ID
+            likedBy: [], 
+            timestamp: Date.now()
+        });
+
+        showModal("提交成功", `餐厅评鉴 "${restaurantName}" 已添加。`);
+        e.target.reset();
+    } catch (error) {
+        console.error("添加评鉴失败:", error);
+        showModal("提交失败", `无法添加评鉴: ${error.message}`);
+    }
+};
+
+// 处理点赞/取消点赞 (仅登录用户)
+const handleLike = async (reviewId, isLiked) => {
+    if (!isLoggedIn) {
+        showModal("权限不足", "请先登录才能使用 'Found this useful' 功能。");
+        return;
+    }
+
+    try {
+        const reviewRef = doc(db, getCollectionPath(), reviewId);
+        
+        const updateField = isLiked ? arrayRemove(currentUserEmail) : arrayUnion(currentUserEmail);
+        
+        await updateDoc(reviewRef, {
+            likedBy: updateField
+        });
+    } catch (error) {
+        console.error("更新点赞状态失败:", error);
+        showModal("操作失败", "无法更新 'Found this useful' 状态。");
+    }
+};
+
+// 处理删除 (仅管理员)
+const handleDelete = async (reviewId, restaurantName) => {
+     if (!isAdmin) {
+        showModal("权限不足", "只有管理员才能删除餐厅评鉴。");
+        return;
+    }
+    
+    showModal("确认删除", `您确定要删除餐厅 "${restaurantName}" 的评鉴吗？`);
+    
+    const originalModalCloseBtn = document.getElementById('modal-close-btn');
+    const originalClick = originalModalCloseBtn.onclick;
+
+    const tempCloseListener = () => {
+        document.getElementById('modal-backdrop').classList.add('hidden');
+        document.getElementById('modal-backdrop').classList.remove('flex');
+    };
+    originalModalCloseBtn.onclick = tempCloseListener; 
+
+    const confirmDelete = async () => {
+        try {
+            await deleteDoc(doc(db, getCollectionPath(), reviewId));
+            
+            originalModalCloseBtn.removeEventListener('click', confirmDelete);
+            originalModalCloseBtn.onclick = originalClick; 
+            showModal("删除成功", `评鉴 "${restaurantName}" 已被删除。`);
+        } catch (error) {
+            originalModalCloseBtn.removeEventListener('click', confirmDelete);
+            originalModalCloseBtn.onclick = originalClick;
+            console.error("删除失败:", error);
+            showModal("删除失败", `无法删除评鉴: ${error.message}`);
+        }
+    };
+
+    originalModalCloseBtn.removeEventListener('click', tempCloseListener);
+    originalModalCloseBtn.addEventListener('click', confirmDelete, { once: true });
+};
 
 // 绑定事件和初始化
 document.addEventListener('DOMContentLoaded', () => {
@@ -464,13 +755,5 @@ document.addEventListener('DOMContentLoaded', () => {
 // 应用程序入口点：首先检查 T&C
 window.onload = checkTermsAndConditions;
 </script>
-
-
-
-    
 </body>
 </html>
-
-
-
-
