@@ -399,74 +399,10 @@
             }
         };
 
-        // Google 登录
-        const signInWithGoogle = async () => {
-            try {
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Google 登录失败:", error);
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    showModal("登录失败", "无法通过 Google 登录，请重试。");
-                }
-            }
-        };
+        
+           
 
-        // 登出
-        const handleSignOut = async () => {
-            try {
-                await signOut(auth);
-                await signInAnonymously(auth);
-                showModal("登出成功", "您已成功登出，现在为匿名用户。");
-            } catch (error) {
-                console.error("登出失败:", error);
-                showModal("登出失败", "登出过程中发生错误，请重试。");
-            }
-        };
-
-        // 根据用户角色更新 UI
-        const updateUIBasedOnAuth = () => {
-            const authStatusDiv = document.getElementById('auth-status');
-            const adminFormContainer = document.getElementById('admin-form-container');
-
-            let authHtml = '';
-            if (isLoggedIn) {
-                const displayName = auth.currentUser.displayName || 'Gmail 用户';
-                authHtml = `
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-600 truncate max-w-[100px] sm:max-w-none">
-                            ${isAdmin ? '👑 管理员: ' : '👋 已登录: '}
-                            ${displayName}
-                        </span>
-                        <button onclick="window.handleSignOut()" class="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition">
-                            登出
-                        </button>
-                    </div>
-                `;
-            } else {
-                authHtml = `
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-500">
-                            ${auth.currentUser && auth.currentUser.isAnonymous ? '👤 匿名用户' : '未登录'}
-                        </span>
-                        <button onclick="window.signInWithGoogle()" class="px-3 py-1 bg-primary-blue text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition">
-                            Gmail 登录
-                        </button>
-                    </div>
-                `;
-            }
-            authStatusDiv.innerHTML = authHtml;
-
-            // 管理员表单默认显示（如果登录）
-            if (isAdmin) {
-                if (adminFormContainer.dataset.visibility !== 'hidden') {
-                    adminFormContainer.classList.remove('hidden');
-                }
-            } else {
-                adminFormContainer.classList.add('hidden');
-                adminFormContainer.dataset.visibility = 'visible'; 
-            }
-        };
+            
 
 
         // --- 标签筛选逻辑 ---
@@ -816,7 +752,7 @@
 <script type="module">
 // 新增：修改 Firebase 登录逻辑，只修改必要部分
 // 1️⃣ 指定管理员 Gmail 地址
-const ADMIN_EMAIL = 'your_admin@gmail.com'; // 请替换为你的管理员 Gmail
+const ADMIN_EMAIL = 'jefflai123123@gmail.com'; // 请替换为你的管理员 Gmail
 
 // 2️⃣ Google 登录修改
 const signInWithGoogle = async () => {
@@ -900,5 +836,6 @@ const updateUIBasedOnAuth = () => {
     
 </body>
 </html>
+
 
 
