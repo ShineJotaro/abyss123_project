@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>abyss_123的餐厅评鉴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'best': '#10b981', // Emerald 500
+                        'good': '#3b82f6', // Blue 500
+                        'caneat': '#f59e0b', // Amber 500
+                        'bad': '#ef4444', // Red 500
+                        'primary-blue': '#3b82f6',
+                        'ai-sparkle': '#f97316', // Orange 500
+                        'useful': '#6366f1', // Indigo 500
+                        'admin-red': '#dc2626', // Red 600
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .loading-hidden { display: none; }
+        /* 导航下拉菜单样式 */
+        .dropdown-menu {
+            transition: all 0.3s ease-out;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+        }
+        .dropdown-hover:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        /* 隐藏滚动条但允许滚动 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        /* 右下角固定按钮 */
+        .admin-entry-btn {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+
+    <div id="terms-and-conditions-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 transform transition-all">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">服务条款与免责声明 / Terms & Conditions and Disclaimer</h2>
+            
+            <div class="text-sm text-gray-700 space-y-4 mb-6 pr-4">
+
+                <h3 class="font-semibold text-lg text-primary-blue mt-4">核心免责声明 (Core Disclaimer)</h3>
+                <p class="font-medium text-red-600 border-l-4 border-red-500 pl-3 py-1 bg-red-50/50">
+                    **重要声明:** 以上所有推荐内容仅以我（abyss_123）**吃到食物的当下为标准**。我们不对餐厅后续的进步或退步所导致的问题承担任何责任，包括但不限于食物中毒、食物口味不佳或您认为我未推荐但实际很美味的食物。同时，我们对用户或餐厅对彼此的怨言、行动或任何法律责任不负责任。您必须接受此条款才能继续使用本网站。
+                </p>
+
+                <p class="font-medium text-red-600 border-l-4 
+border-red-500 pl-3 py-1 bg-red-50/50">
+                    **Crucial Disclaimer:** All recommendations herein are based **solely on the quality of the food at the moment I (abyss_123) consumed it**.
+                    We are not responsible for any issues arising from the restaurant's subsequent improvement or deterioration, including but not limited to food poisoning, bad taste, or highly-rated food that I did not recommend.
+                    Furthermore, we are not liable for any user or restaurant grievances, actions, or legal matters directed at each other.
+                    You must accept this term to proceed.
+                </p>
+
+                <h3 class="font-semibold text-lg text-gray-700 mt-6">标准服务条款 (Standard Terms of Service)</h3>
+                <p>
+                    **Cookie 政策:** 本网站使用 Cookie（或本地存储）来存储您的偏好设置和会话状态（包括您接受此条款的状态）。通过使用本网站，您同意我们根据我们的 Cookie 政策使用 Cookie。
+                </p>
+           
+                <p>
+                    **隐私政策:** 我们重视您的隐私。我们仅收集和使用为提供基本服务（如用户认证、点赞功能）所必需的数据，例如您的 Google 用户ID。您的个人信息（如评论或图片）不会被公开分享给第三方，除非法律要求。
+                </p>
+                <p>
+                    **使用限制:** 您同意不以任何非法、有害或侵犯他人权利的方式使用本网站。
+                </p>
+
+   
+                <h3 class="font-semibold text-lg text-gray-700 mt-6">Standard Terms of Service</h3>
+                <p>
+                    **Cookie Policy:** This site uses cookies (or local storage) to store your preferences and session status (including your acceptance of these terms).
+                    By using this site, you consent to our use of cookies in accordance with our Cookie Policy.
+                </p>
+                <p>
+                    **Privacy Policy:** We value your privacy.
+                    We only collect and use data necessary for providing essential services (such as user authentication, and like features), such as your Google User ID.
+                    Your personal information (such as comments or images) will not be publicly shared with third parties unless required by law.
+                </p>
+                <p>
+                    **Use Restrictions:** You agree not to use this site in any manner that is unlawful, harmful, or infringes upon the rights of others.
+                </p>
+            </div>
+
+            <div class="flex justify-end space-x-4 border-t pt-4">
+                <button id="decline-terms-btn" class="px-6 py-2 text-base font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                    不接受并退出 (Decline & Exit)
+                </button>
+      
+                <button id="accept-terms-btn" class="px-6 py-2 text-base font-medium text-white bg-primary-blue rounded-lg hover:bg-blue-600 transition">
+                    我接受条款 (I Accept the Terms)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-indicator" class="fixed inset-0 bg-white/70 flex items-center justify-center z-50 hidden">
+   
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        
+            </svg>
+            <p class="mt-2 text-sm text-primary-blue">应用初始化中...</p>
+        </div>
+    </div>
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+             
+                    <div class="text-xl font-bold text-gray-900">abyss_123的餐厅评鉴</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <nav id="region-nav" class="flex space-x-4 no-scrollbar overflow-x-auto py-2">
+                        <p class="text-gray-400 text-sm">加载地区...</p>
+   
+                    </nav>
+                    <button id="auth-button" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary-blue hover:bg-blue-600 transition duration-150 whitespace-nowrap">
+                        使用 Gmail 登录
+                    </button>
+     
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="app-container" class="max-w-4xl mx-auto p-4 sm:p-8 opacity-0 transition-opacity duration-500 hidden">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">我的餐厅评鉴</h1>
+            <p class="text-gray-500">记录我的用餐体验，并使用 AI 总结。</p>
+           
+            <div id="user-info" class="mt-4 text-sm bg-gray-100 p-2 rounded-lg shadow-inner">
+                <p class="text-gray-600">
+                    当前用户ID: <span id="current-user-id" class="font-mono font-semibold text-gray-800">加载中...</span>
+                    <span id="owner-status" class="ml-2 px-2 py-0.5 rounded-full text-xs font-medium"></span>
+                </p>
+       
+                <button id="manage-regions-btn" class="mt-2 text-sm text-primary-blue hover:text-blue-600 font-medium hidden">
+                    管理国家/州属
+                </button>
+            </div>
+
+            <button id="show-rating-standard-btn" class="mt-3 px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition duration-150">
+                评分标准说明
+            </button>
+            </header>
+
+        <section id="add-review-section" class="mb-10 bg-white p-6 rounded-xl shadow-lg border border-gray-100 hidden">
+           
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">添加新记录 (支持图片)</h2>
+            <form id="add-review-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="review-country" class="block text-sm font-medium text-gray-700">国家/地区</label>
+                        <select id="review-country" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition bg-white">
+                            <option value="">选择国家/地区</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label for="review-state" class="block text-sm font-medium text-gray-700">州属/城市</label>
+                        <select id="review-state" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition bg-white" disabled>
+                            <option value="">先选择国家/地区</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="restaurant-name" class="block text-sm font-medium text-gray-700">餐厅名称</label>
+         
+                        <input type="text" id="restaurant-name" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition">
+                    </div>
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700">地址 (可选)</label>
+  
+                        <input type="text" id="address" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition" placeholder="餐厅的具体地址">
+                    </div>
+                </div>
+                
+             
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700">类别</label>
+                        <select id="category" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition bg-white">
+       
+                            <option value="">选择类别</option>
+                            <option value="中餐">中餐</option>
+                            <option value="西餐">西餐</option>
+                    
+                            <option value="日韩料理">日韩料理</option>
+                            <option value="咖啡厅/甜品">咖啡厅/甜品</option>
+                            <option value="快餐/小吃">快餐/小吃</option>
+                            <option value="其他">其他</option>
+    
+                        </select>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">评分状态</label>
+           
+                        <select id="status" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition bg-white">
+                            <option value="">选择评分</option>
+                            <option value="Best">Best 😆 (最佳)</option>
+              
+                            <option value="Good">Good 😁 (不错)</option>
+                            <option value="Can eat">Can eat 🙂 (可以吃)</option>
+                            <option value="Bad">Bad 😠 (差评)</option>
+                   
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="comment" class="block text-sm font-medium text-gray-700">评论/简述</label>
+                  
+                    <textarea id="comment" rows="3" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-primary-blue focus:border-primary-blue transition"></textarea>
+                </div>
+
+                <div>
+                    <label for="image-upload" class="block text-sm font-medium text-gray-700">上传图片 (可选，PNG/JPG)</label>
+                    <input type="file" id="image-upload" accept="image/png, image/jpeg" class="mt-1 block 
+w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-blue/10 file:text-primary-blue hover:file:bg-primary-blue/20">
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-primary-blue hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-150 ease-in-out disabled:opacity-50" disabled>
+                    <span id="btn-text">添加记录</span>
+            
+                </button>
+                <p id="error-message" class="text-sm text-bad mt-2 hidden"></p>
+            </form>
+        </section>
+
+        <section class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">我的用餐记录</h2>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-3 sm:space-y-0">
+   
+                <div id="filter-buttons" class="flex space-x-2 flex-wrap">
+                    </div>
+                <p id="total-count" class="text-sm text-gray-500">总共 0 条记录</p>
+            </div>
+
+            <div id="reviews-list" class="space-y-4">
+                
+                <p id="empty-message" class="text-center text-gray-400 p-8 border-2 border-dashed rounded-lg hidden">
+                    主人还没有添加任何记录！
+                </p>
+            </div>
+        </section>
+
+         <div id="custom-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden items-center justify-center p-4" aria-modal="true" role="dialog">
+            <div id="modal-content-container" class="bg-white 
+rounded-lg shadow-xl w-full max-w-lg p-6 transform transition-all">
+                <button id="modal-close-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close modal" onclick="document.getElementById('custom-modal').classList.add('hidden');
+document.getElementById('custom-modal').classList.remove('flex');">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-4 border-b pb-2"></h3>
+                <div id="modal-body">
+        
+                    <p id="modal-content" class="text-sm text-gray-600 mb-6"></p>
+                </div>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button id="modal-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition hidden">
+                 
+                        关闭
+                    </button>
+                    <button id="modal-confirm-btn" class="px-4 py-2 text-sm font-medium text-white bg-primary-blue rounded-lg hover:bg-blue-600 transition">
+                        确定
+                   
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="region-manager-content" class="hidden">
+            <div class="space-y-4">
+                <form id="add-region-form" class="space-y-2 border p-3 rounded-lg bg-gray-50">
+                  
+                    <p class="font-semibold text-gray-700">添加新的国家/州属</p>
+                    <div class="flex space-x-2">
+                        <input type="text" id="new-country" required placeholder="国家 (如: MY)" class="w-1/3 rounded-lg border-gray-300 shadow-sm p-2 text-sm">
+                        <input type="text" id="new-state" required placeholder="州属/城市 (如: KL)" class="w-1/3 rounded-lg border-gray-300 shadow-sm p-2 text-sm">
+  
+                        <button type="submit" class="w-1/3 py-2 text-sm font-medium text-useful rounded-lg hover:bg-indigo-600 transition">添加</button>
+                    </div>
+                </form>
+
+                <div class="border p-3 rounded-lg bg-white">
+            
+                    <p class="font-semibold text-gray-700 mb-2 border-b pb-1">已添加的地区</p>
+                    <div id="region-list-modal" class="max-h-60 overflow-y-auto space-y-1">
+                        <p class="text-sm text-gray-400">暂无地区信息。</p>
+                    </div>
+                </div>
+ 
+            </div>
+        </div>
+        
+        <div id="admin-login-content" class="hidden">
+            <form id="admin-login-form" class="space-y-4">
+                <p class="text-sm text-gray-600">请使用管理员邮箱和密码进行登录。</p>
+                <div>
+               
+                    <label for="admin-email" class="block text-sm font-medium text-gray-700">管理员邮箱 (Gmail)</label>
+                    <input type="email" id="admin-email" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-admin-red focus:border-admin-red transition">
+                </div>
+                <div>
+                    <label for="admin-password" class="block text-sm 
+font-medium text-gray-700">密码</label>
+                    <input type="password" id="admin-password" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-admin-red focus:border-admin-red transition">
+                </div>
+                <button type="submit" id="admin-submit-btn" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-admin-red hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-red transition duration-150 ease-in-out">
+             
+                        登录为管理员
+                </button>
+                <p id="admin-error-message" class="text-sm text-bad mt-2 hidden text-center"></p>
+            </form>
+        </div>
+
+
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-8 mt-12">
+        <div class="ads-container p-4 bg-gray-100 rounded-xl text-center">
+         
+            <p class="text-sm text-gray-500 mb-2">广告赞助商内容</p>
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9923429709566940"
+                crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                style="display:block;
+min-height: 100px;"
+                data-ad-format="autorelaxed"
+                data-ad-client="ca-pub-9923429709566940"
+                data-ad-slot="7327876978"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+       
+        </div>
+    </div>
+    
+    <button id="admin-login-entry" class="admin-entry-btn px-4 py-2 rounded-full text-xs font-medium text-white bg-gray-700 hover:bg-gray-800 shadow-lg transition duration-150">
+        管理员入口
+    </button>
+
+    <script type="module">
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getFirestore, collection, 
+            query, orderBy, onSnapshot, where,
+            addDoc, deleteDoc, doc, setDoc, updateDoc, getDocs,
+            setLogLevel 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getStorage, ref, uploadBytes, getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        // 设置 Firebase 日志级别
+        setLogLevel('Debug');
+        // --- 全局配置和变量 ---
+        let db, auth, storage, userId = null;
+        let isOwner = false;
+        let isLoggedIn = false; 
+        let reviews = [];
+        let likesMap = {};
+        // { reviewId: count, ... }
+        let currentFilter = 'All'; // 'All', 'Best', 'Good', 'Can eat', 'Bad'
+        let currentRegionFilter = { countryCode: 'All', stateName: 'All' }; // { countryCode: 'MY', stateName: 'KL' }
+        let allRegions = []; // 存储所有地区信息
+        
+        // --- 核心配置和变量 ---
+        // **请确保您的管理员账户的 UID 与此 OWNER_ID 匹配**
+        const OWNER_ID = '02949447418893306369';
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const API_KEY = "";
+        // 由 Canvas 运行时提供
+        const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
+        
+        // 默认地区列表 (新增)
+        const DEFAULT_REGIONS = [
+            // Malaysia (MY) States and Federal Territories
+            { country: 'MY', state: 'Johor', sortOrder: 1 },
+            { country: 'MY', state: 'Kedah', sortOrder: 2 },
+            { country: 'MY', state: 'Kelantan', sortOrder: 3 },
+            { country: 'MY', state: 'Melaka', sortOrder: 4 },
+            { country: 'MY', state: 'Negeri Sembilan', sortOrder: 5 },
+            { country: 'MY', state: 'Pahang', sortOrder: 6 },
+            { country: 'MY', state: 'Perak', sortOrder: 7 },
+            { country: 'MY', state: 'Perlis', sortOrder: 8 },
+            { country: 'MY', state: 'Pulau Pinang', sortOrder: 9 },
+            { country: 'MY', state: 'Sabah', sortOrder: 10 },
+            { country: 'MY', state: 'Sarawak', sortOrder: 11 },
+            { country: 'MY', state: 'Selangor', sortOrder: 12 },
+            { country: 'MY', state: 'Terengganu', sortOrder: 13 },
+            { country: 'MY', state: 'Kuala Lumpur', sortOrder: 14 },
+            { country: 'MY', state: 'Putrajaya', sortOrder: 15 },
+            { country: 'MY', state: 'Labuan', sortOrder: 16 },
+            // Singapore (SG)
+            { country: 'SG', state: 'Singapore', sortOrder: 100 },
+        ];
+
+
+        // 评分配置映射
+        const RATING_CONFIG = {
+            'Best': { emoji: '😆', color: 'bg-best', text: '最佳' },
+            'Good': { emoji: '😁', color: 'bg-good', text: '不错' },
+            'Can eat': { emoji: '🙂', color: 'bg-caneat', text: '可以吃' },
+            'Bad': { emoji: '😠', color: 'bg-bad', text: '差评' },
+            'All': { emoji: '', color: 'bg-primary-blue', text: '全部' }
+        };
+
+        // --- 评分标准说明内容 (新增) ---
+        const RATING_EXPLANATION_HTML = `
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-gray-900 border-b pb-2">餐厅评分标准说明</h3>
+                <p class="text-sm text-gray-700">
+                    本餐厅的评分系统分为四个等级：<span class="font-semibold text-best">最佳 (Best)</span>、<span class="font-semibold text-good">不错 (Good)</span>、<span class="font-semibold text-caneat">可以吃 (Can eat)</span> 和 <span class="font-semibold text-bad">差评 (Bad)</span>。这些评分是基于作者（abyss_123）的个人体验和判断，<span class="font-bold text-indigo-700">并不总是代表餐厅的整体水平</span>。
+                </p>
+                <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-4">
+                    <li>**最佳 (Best):** 通常指餐厅的某道菜品或某方面（如创意、食材质量）达到了超越其他同类餐厅的**卓越水平**。</li>
+                    <li>**差评 (Bad):** 未必是环境或食物本身存在严重问题。<span class="font-medium text-red-500">有时可能是指服务体验极差、性价比过低、或某道食物严重不符合期望。</span></li>
+                </ul>
+                <p class="font-bold text-sm text-red-600 mt-3">
+                    最终标准: 一切评分细节和原因，请以评论栏中的**详细文字描述**为准。请勿仅凭星级判断餐厅。
+                </p>
+                
+                <h3 class="text-xl font-bold text-gray-900 border-b pb-2 pt-4">Rating Standard Explanation</h3>
+                <p class="text-sm text-gray-700">
+                    The restaurant rating system is divided into four levels: <span class="font-semibold text-best">Best</span>, <span class="font-semibold text-good">Good</span>, <span class="font-semibold text-caneat">Can eat</span>, and <span class="font-semibold text-bad">Bad</span>. These ratings are based on the author's (abyss_123) personal experience and judgment, and <span class="font-bold text-indigo-700">do not always reflect the restaurant's overall quality</span>.
+                </p>
+                <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-4">
+                    <li>**Best:** Usually indicates that a specific dish or aspect of the restaurant (e.g., creativity, ingredient quality) has reached an **excellent level** that surpasses other comparable restaurants.</li>
+                    <li>**Bad:** This does not necessarily mean the environment or food is severely problematic. <span class="font-medium text-red-500">It can sometimes refer to an extremely poor service experience, exceptionally low value for money, or a specific dish that severely failed expectations.</span></li>
+                </ul>
+                <p class="font-bold text-sm text-red-600 mt-3">
+                    Final Criterion: The detailed written description in the **comments column** is the definitive source for all rating specifics and reasons. Please do not judge the restaurant solely based on the star rating.
+                </p>
+            </div>
+        `;
+
+        
+        // --- Firestore 路径构造 ---
+        function getReviewsCollection() {
+            return collection(db, 'artifacts', APP_ID, 'users', OWNER_ID, 'recommendations');
+        }
+        function getRegionsCollection() {
+            return collection(db, 'artifacts', APP_ID, 'users', OWNER_ID, 'regions');
+        }
+        function getLikesCollection() {
+            return collection(db, 'artifacts', APP_ID, 'public', 'data', 'reviewLikes');
+        }
+        function getLikeDocRef(reviewId) {
+            // Document ID uses both review ID and user ID to ensure uniqueness per like
+            return doc(db, 'artifacts', APP_ID, 'public', 'data', 'reviewLikes', `${reviewId}_${userId}`);
+        }
+
+        // --- 核心工具函数 ---
+
+        // 模态框函数
+        function showModal(title, content, onConfirm, showCancel = false, isTemplate = false) {
+            const modal = document.getElementById('custom-modal');
+            const contentContainer = document.getElementById('modal-content-container');
+            const modalBody = document.getElementById('modal-body');
+            document.getElementById('modal-title').textContent = title;
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+            const closeBtn = document.getElementById('modal-close-btn');
+
+            // 区分内容是纯文本还是 HTML 模板
+            if (isTemplate) {
+                document.getElementById('modal-content').classList.add('hidden');
+                modalBody.innerHTML = content;
+                contentContainer.classList.add('max-w-xl'); // 模板可能需要更宽
+            } else {
+                document.getElementById('modal-content').textContent = content;
+                document.getElementById('modal-content').classList.remove('hidden');
+                modalBody.innerHTML = ''; // 清空模板
+                contentContainer.classList.remove('max-w-xl');
+            }
+
+            confirmBtn.onclick = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                if (onConfirm) onConfirm();
+            };
+            
+            closeBtn.onclick = () => {
+                 modal.classList.add('hidden');
+                 modal.classList.remove('flex');
+            };
+
+            if (showCancel) {
+                cancelBtn.textContent = isTemplate ?
+                '关闭' : '取消';
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                };
+                if (!onConfirm) {
+                    confirmBtn.classList.add('hidden');
+                // 如果没有确认操作，隐藏确认按钮
+                } else {
+                    confirmBtn.classList.remove('hidden');
+                }
+            } else {
+                cancelBtn.classList.add('hidden');
+                confirmBtn.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // 如果是模板，需要重新绑定模板中的事件
+            if (isTemplate) {
+                if (title === '地区管理') {
+                    bindRegionManagerEvents();
+                } else if (title === '管理员登录') {
+                    bindAdminLoginEvents();
+                }
+            }
+        }
+        
+        // --- 认证函数 ---
+
+        // (1) 普通用户/管理员 Google 登录 (无需密码)
+        async function handleGoogleSignIn() {
+            try {
+                const provider = new GoogleAuthProvider();
+                // 强制选择 Google 账户
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                await signInWithPopup(auth, provider);
+                // Auth state change listener will handle UI update
+            } catch (error) {
+                console.error("Google 登录失败:", error);
+                showModal('登录失败', `无法通过 Google 登录: ${error.message}`, null);
+            }
+        }
+        
+        // (2) 专门的管理员 Email/Password 登录 (带密码)
+        function handleAdminLoginEntry() {
+            showModal('管理员登录', document.getElementById('admin-login-content').innerHTML, null, true, true);
+            // 隐藏确认按钮，只保留关闭和表单提交
+            document.getElementById('modal-confirm-btn').classList.add('hidden');
+        }
+
+        function bindAdminLoginEvents() {
+            const form = document.getElementById('admin-login-form');
+            form.onsubmit = handleAdminLoginSubmit;
+        }
+
+        async function handleAdminLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorEl = document.getElementById('admin-error-message');
+            const submitBtn = document.getElementById('admin-submit-btn');
+
+            errorEl.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登录中...';
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                if (userCredential.user.uid === OWNER_ID) {
+                    // 成功登录且是管理员
+                    showModal('登录成功', '您已成功以管理员身份登录。', null);
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    document.getElementById('custom-modal').classList.remove('flex');
+                } else {
+                    // 成功登录但不是指定的管理员
+                    await signOut(auth);
+                    errorEl.textContent = '此账号非指定管理员账号。';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("管理员登录失败:", error);
+                errorEl.textContent = '登录失败: 邮箱或密码不正确。';
+                errorEl.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '登录为管理员';
+            }
+        }
+
+
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                // 退出登录后，重新以匿名用户身份登录，以保持 userId 存在
+                await signInAnonymously(auth);
+                // Auth state change listener will handle UI update
+            } catch (error) {
+                console.error("退出登录失败:", error);
+                showModal('退出失败', `退出登录失败: ${error.message}`, null);
+            }
+        }
+
+
+        // --- 地区管理函数 (新增/修改) ---
+
+        /**
+         * 初始化默认地区：如果地区列表为空，则从 DEFAULT_REGIONS 导入
+         */
+        async function initializeDefaultRegions() {
+            try {
+                // 仅在 OWNER_ID 登录时执行初始化
+                if (!isOwner) return;
+
+                const regionsQuery = query(getRegionsCollection());
+                const snapshot = await getDocs(regionsQuery);
+
+                if (snapshot.empty) {
+                    console.log("Regions collection is empty. Initializing default regions...");
+                    for (const region of DEFAULT_REGIONS) {
+                        // 使用 setDoc 和一个基于国家/州属的 ID 来避免重复添加
+                        const regionId = `${region.country}_${region.state.replace(/\s/g, '_')}`;
+                        await setDoc(doc(getRegionsCollection(), regionId), region);
+                    }
+                    console.log("Default regions initialized successfully.");
+                } else {
+                    console.log("Regions collection already contains data, skipping initialization.");
+                }
+            } catch (error) {
+                console.error("Initializing default regions failed:", error);
+            }
+        }
+
+        function bindRegionManagerEvents() {
+            const form = document.getElementById('add-region-form');
+            if (form) {
+                form.onsubmit = handleAddRegion;
+            }
+        }
+        
+        async function handleAddRegion(e) {
+            e.preventDefault();
+            if (!isOwner) return;
+
+            const country = document.getElementById('new-country').value.trim();
+            const state = document.getElementById('new-state').value.trim();
+            if (!country || !state) {
+                showModal('错误', '国家和州属都不能为空。', null);
+                return;
+            }
+
+            try {
+                const regionId = `${country.toUpperCase()}_${state.replace(/\s/g, '_')}`;
+                await setDoc(doc(getRegionsCollection(), regionId), {
+                    country: country.toUpperCase(),
+                    state: state,
+                    sortOrder: Date.now() 
+                }, { merge: true }); // 使用 merge 避免覆盖现有文档，并确保 ID 唯一性
+                
+                document.getElementById('new-country').value = '';
+                document.getElementById('new-state').value = '';
+            } catch (error) {
+                console.error("添加地区失败:", error);
+                showModal('错误', `添加地区失败: ${error.message}`, null);
+            }
+        }
+
+        function handleDeleteRegion(id, country, state) {
+            if (!isOwner) return;
+            showModal(
+                '确认删除地区',
+                `确定要删除地区 "${country} - ${state}" 吗？`,
+                async () => {
+                    try {
+                        
+                        await deleteDoc(doc(getRegionsCollection(), id));
+                    } catch (error) {
+                        console.error("删除地区失败:", error);
+                        showModal('错误', `删除地区失败: ${error.message}`, null);
+   
+                    }
+                },
+                true
+            );
+        }
+
+        /**
+         * 渲染 Header 导航栏 (包含筛选逻辑)
+         */
+        function renderRegionNav(regions) {
+            const navContainer = document.getElementById('region-nav');
+            if (!navContainer) return; 
+
+            allRegions = regions; // 存储地区列表供 review form 使用
+            navContainer.innerHTML = ''; 
+
+            if (regions.length === 0) {
+                navContainer.innerHTML = '<p class="text-gray-400 text-sm">暂无地区信息</p>';
+                return;
+            }
+            
+            // 1. 添加 '全部地区' 按钮
+            const allActive = currentRegionFilter.countryCode === 'All';
+            const allButtonHtml = `
+                <button data-country="All" data-state="All" 
+                    class="region-filter-btn px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition 
+                    ${allActive ? 'bg-primary-blue text-white shadow-md' : 'text-gray-600 hover:text-gray-900 bg-gray-100'}">
+                    全部地区
+                </button>
+            `;
+            navContainer.insertAdjacentHTML('beforeend', allButtonHtml);
+
+
+            // 2. 按国家/地区分组渲染下拉菜单
+            const countries = regions.reduce((acc, region) => {
+                if (!acc[region.country]) {
+                    acc[region.country] = [];
+                }
+             
+                acc[region.country].push(region);
+                return acc;
+            }, {});
+            
+            Object.entries(countries).forEach(([countryCode, states]) => {
+                const countryActive = currentRegionFilter.countryCode === countryCode && currentRegionFilter.stateName === 'All';
+                const countryButtonHtml = `
+                    <div class="relative dropdown-hover">
+                        <button data-country="${countryCode}" data-state="All"
+                            class="region-filter-btn text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center transition 
+                            ${countryActive ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-50'}"
+                        >
+                            ${countryCode} (${states.length})
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="dropdown-menu 
+absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                ${states.map(s => {
+                                    const stateActive = currentRegionFilter.countryCode === countryCode && currentRegionFilter.stateName === s.state;
+                                    return `<a href="#" data-country="${countryCode}" data-state="${s.state}" 
+                                        class="region-filter-btn block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 
+                                        ${stateActive ? 'bg-primary-blue text-white hover:bg-primary-blue/90' : ''}">
+                                        ${s.state}
+                                    </a>`;
+                                }).join('')}
+                            </div>
+                        
+                        </div>
+                    </div>
+                `;
+                navContainer.insertAdjacentHTML('beforeend', countryButtonHtml);
+            });
+
+            // 3. 绑定筛选事件
+            document.querySelectorAll('.region-filter-btn').forEach(btn => {
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    const countryCode = this.getAttribute('data-country');
+                    const stateName = this.getAttribute('data-state');
+                    currentRegionFilter = { countryCode, stateName };
+                    
+                    // 重新渲染导航栏以更新激活状态
+                    renderRegionNav(regions);
+                    
+                    // 重新订阅 reviews 以应用新的地区筛选
+                    subscribeToReviews(); 
+                };
+            });
+        }
+
+        /**
+         * 渲染地区选择器 (用于 '添加新记录' 表单)
+         */
+        function renderRegionSelectors() {
+            const countrySelect = document.getElementById('review-country');
+            const stateSelect = document.getElementById('review-state');
+            
+            if (!countrySelect || !stateSelect) return;
+
+            // 清空并填充国家/地区选择器
+            countrySelect.innerHTML = '<option value="">选择国家/地区</option>';
+            const countries = [...new Set(allRegions.map(r => r.country))].sort();
+
+            countries.forEach(countryCode => {
+                const option = document.createElement('option');
+                option.value = countryCode;
+                option.textContent = countryCode;
+                countrySelect.appendChild(option);
+            });
+            
+            // 绑定国家/地区选择事件
+            countrySelect.onchange = function() {
+                const selectedCountry = this.value;
+                stateSelect.innerHTML = '<option value="">选择州属/城市</option>';
+                
+                if (selectedCountry) {
+                    stateSelect.disabled = false;
+                    const states = allRegions
+                        .filter(r => r.country === selectedCountry)
+                        .map(r => r.state)
+                        .sort();
+
+                    states.forEach(stateName => {
+                        const option = document.createElement('option');
+                        option.value = stateName;
+                        option.textContent = stateName;
+                        stateSelect.appendChild(option);
+                    });
+                } else {
+                    stateSelect.disabled = true;
+                }
+            };
+            
+            // 首次渲染时禁用州属选择器
+            stateSelect.disabled = !countrySelect.value;
+        }
+
+
+        function renderRegionsInModal(regions) {
+            const listContainer = document.getElementById('region-list-modal');
+            if (!listContainer) return; 
+
+            listContainer.innerHTML = '';
+            if (regions.length === 0) {
+                listContainer.innerHTML = '<p class="text-sm text-gray-400">暂无地区。</p>';
+                return;
+            }
+
+            regions.forEach(r => {
+                const itemHtml = `
+                    <div class="flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                        <span class="text-sm font-medium text-gray-700">${r.country} - ${r.state}</span>
+           
+                        <button data-id="${r.id}" data-country="${r.country}" data-state="${r.state}" class="delete-region-btn text-bad hover:text-red-700 p-1 rounded-full transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 10-2 0v6a1 1 0 
+102 0V8z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', itemHtml);
+            });
+            document.querySelectorAll('.delete-region-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    handleDeleteRegion(
+                        e.currentTarget.getAttribute('data-id'),
+                        e.currentTarget.getAttribute('data-country'),
+           
+                        e.currentTarget.getAttribute('data-state')
+                    );
+                });
+            });
+        }
+
+
+        async function callGeminiApi(payload, maxRetries = 3) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
+            const headers = { 'Content-Type': 'application/json' };
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                 
+                        headers: headers,
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if (response.status === 429 && attempt < maxRetries - 1) {
+                            const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue; 
+                        }
+                        throw new Error(`API 请求失败: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) {
+                         throw new Error("API 响应中未找到生成的文本。");
+                    }
+                    return text;
+                } catch (error) {
+                    if (attempt === maxRetries - 1) {
+                        console.error("Gemini API 调用最终失败:", error);
+                        throw new Error(`AI 服务暂时不可用: ${error.message}`);
+                    }
+                }
+            }
+        }
+        
+        async function generateReviewSummary(reviewId, restaurantName, status, comment) {
+            if (!isOwner) return;
+            const loadingElement = document.getElementById(`summary-loading-${reviewId}`);
+            const summaryElement = document.getElementById(`summary-content-${reviewId}`);
+            const buttonElement = document.getElementById(`summary-btn-${reviewId}`);
+            if (!loadingElement || !summaryElement || !buttonElement) {
+                console.error("未能找到 AI 摘要的 UI 元素.");
+                return;
+            }
+
+            summaryElement.innerHTML = '';
+            summaryElement.classList.add('hidden');
+            loadingElement.classList.remove('hidden');
+            buttonElement.disabled = true;
+            buttonElement.textContent = '✨ AI 思考中...';
+
+            const ratingText = RATING_CONFIG[status] ? RATING_CONFIG[status].text : '未评分';
+            const ratingEmoji = RATING_CONFIG[status] ? RATING_CONFIG[status].emoji : '';
+            const systemPrompt = "你是一个美食博主助理。你的任务是根据提供的餐厅评论，生成一段精炼、吸引人的总结，用作社交媒体帖子或短文案。总结必须简洁（不超过50字），语气活泼积极，并包含 emoji。";
+            const userQuery = `餐厅名称: ${restaurantName}。我的评级是: ${ratingText} ${ratingEmoji}。我的详细评论是: ${comment}。请生成总结。`;
+            const payload = { 
+                contents: [{ parts: [{ text: userQuery }] }], 
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            try {
+                const summary = await callGeminiApi(payload);
+                summaryElement.innerHTML = `<span class="font-semibold text-ai-sparkle">AI 总结:</span> ${summary}`;
+                summaryElement.classList.remove('hidden');
+            } catch (error) {
+                summaryElement.innerHTML = `<span class="font-semibold text-bad">AI 错误:</span> ${error.message}`;
+                summaryElement.classList.remove('hidden');
+                console.error('生成总结失败:', error);
+            } finally {
+                loadingElement.classList.add('hidden');
+                buttonElement.disabled = false;
+                buttonElement.textContent = '✨ AI 总结评论';
+            }
+        }
+
+        async function handleLike(reviewId, isLiked) {
+            if (!isLoggedIn) {
+                showModal('权限不足', '只有使用 Gmail 登录的用户才能使用 "Found this useful" 功能。', handleGoogleSignIn, true);
+                return;
+            }
+            const docRef = getLikeDocRef(reviewId);
+            try {
+                if (isLiked) {
+                    await deleteDoc(docRef);
+                } else {
+                    await setDoc(docRef, { reviewId: reviewId, userId: userId, timestamp: new Date() });
+                }
+            } catch (error) {
+                console.error("点赞/取消点赞操作失败:", error);
+                showModal('错误', `操作失败: ${error.message}`, null);
+            }
+        }
+
+        // --- Firebase 集成和 UI 渲染 ---
+        // Firebase 初始化和认证
+        async function initializeFirebase() {
+            // 确保加载指示器和应用主体可见
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            try {
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                storage = getStorage(app);
+                document.getElementById('admin-login-entry').onclick = handleAdminLoginEntry;
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isOwner = userId === OWNER_ID; // R1: 权限检查
+                 
+                        isLoggedIn = !user.isAnonymous; // 确定是否为真实用户（非匿名）
+
+                        // R4: 更新用户信息和认证按钮
+                        document.getElementById('current-user-id').textContent = userId;
+                        const statusEl = document.getElementById('owner-status');
+          
+                        const manageRegionsBtn = document.getElementById('manage-regions-btn');
+                        const authBtn = document.getElementById('auth-button');
+
+                        if (isOwner) {
+                            statusEl.textContent = 
+                            '我 (管理员)';
+                            statusEl.className = 'ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-admin-red text-white';
+                            authBtn.textContent = '退出登录';
+                            authBtn.onclick = handleSignOut;
+                            manageRegionsBtn.classList.remove('hidden');
+                            manageRegionsBtn.onclick = () => {
+                                showModal('地区管理', document.getElementById('region-manager-content').innerHTML, null, true, true);
+                            };
+                            // 只有管理员需要初始化默认地区
+                            await initializeDefaultRegions(); 
+                        } else if (isLoggedIn) {
+                            statusEl.textContent = '已登录用户';
+                            statusEl.className = 'ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800';
+                            authBtn.textContent = '退出登录';
+                            authBtn.onclick = handleSignOut;
+                            manageRegionsBtn.classList.add('hidden');
+                        } else {
+                            statusEl.textContent = '匿名访客';
+                            statusEl.className = 'ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700';
+                            authBtn.textContent = '使用 Gmail 登录';
+                            authBtn.onclick = handleGoogleSignIn;
+                            manageRegionsBtn.classList.add('hidden');
+                        }
+
+                        // R1, R6: 更新 UI 权限
+                        if (isOwner) {
+                            document.getElementById('add-review-section').classList.remove('hidden');
+                            document.getElementById('submit-btn').disabled = false;
+                            document.getElementById('btn-text').textContent = '添加记录';
+                        } else {
+                            document.getElementById('add-review-section').classList.add('hidden');
+                            document.getElementById('submit-btn').disabled = true;
+                            document.getElementById('btn-text').textContent = '非管理员无法添加';
+                        }
+                        
+                        setTimeout(() => {
+                            subscribeToReviews();
+                
+                            subscribeToLikes();
+                            subscribeToRegions(); // 订阅地区数据并在其回调中调用 renderRegionSelectors
+                        }, 0);
+                    } else {
+                        // Initial load: try custom token or sign in anonymously
+                        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ?
+                        __initial_auth_token : null;
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+
+                    document.getElementById('loading-indicator').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('opacity-0');
+                });
+            } catch (error) {
+                console.error("Firebase 初始化或认证失败:", error);
+                document.getElementById('current-user-id').textContent = '认证失败';
+                document.getElementById('loading-indicator').classList.add('hidden');
+            }
+        }
+
+        async function uploadImage(file) {
+            if (!file || !userId) return null;
+            const fileExtension = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExtension}`;
+            const storageRef = ref(storage, `reviews/${OWNER_ID}/${fileName}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(snapshot.ref);
+            return url;
+        }
+
+        document.getElementById('add-review-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isOwner) {
+                showModal('权限错误', '只有管理员可以添加记录。', null);
+                return;
+            }
+         
+            const countryCode = document.getElementById('review-country').value; // 新增
+            const stateName = document.getElementById('review-state').value; // 新增
+            const restaurantName = document.getElementById('restaurant-name').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const category = document.getElementById('category').value;
+            const status = document.getElementById('status').value;
+            const comment = document.getElementById('comment').value.trim();
+            const imageFile = document.getElementById('image-upload').files[0];
+
+            const submitBtn = document.getElementById('submit-btn');
+    
+            if (!countryCode || !stateName || !restaurantName || !category || !status || !comment) { // 检查新增字段
+                document.getElementById('error-message').textContent = '国家、州属、餐厅名称、类别、评分和评论都必须填写！';
+                document.getElementById('error-message').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('error-message').classList.add('hidden');
+            submitBtn.disabled = true;
+            document.getElementById('btn-text').textContent = '正在上传/保存...';
+            try {
+                let imageUrl = null;
+                if (imageFile) {
+                    imageUrl = await uploadImage(imageFile);
+                }
+
+                await addDoc(getReviewsCollection(), {
+                    countryCode, // 新增
+                    stateName,   // 新增
+                    restaurantName,
+                    address: address || '未提供',
+                    category,
+                   
+                    status,
+                    comment,
+                    imageUrl,
+                    timestamp: new Date(),
+                    sortTime: Date.now()
+                
+                });
+
+                document.getElementById('add-review-form').reset();
+                document.getElementById('image-upload').value = '';
+                showModal('成功', `已成功添加 "${restaurantName}" 的记录！`, null);
+            } catch (error) {
+                console.error("添加记录失败:", error);
+                showModal('错误', `添加记录失败: ${error.message}`, null);
+            } finally {
+                submitBtn.disabled = false;
+                document.getElementById('btn-text').textContent = '添加记录';
+            }
+        });
+        
+        /**
+         * 订阅和筛选评论数据 (修改)
+         */
+        function subscribeToReviews() {
+            let reviewsQuery = query(getReviewsCollection(), orderBy('sortTime', 'desc'));
+            
+            // 应用地区筛选 (新增逻辑)
+            if (currentRegionFilter.countryCode !== 'All') {
+                reviewsQuery = query(reviewsQuery, where('countryCode', '==', currentRegionFilter.countryCode));
+                if (currentRegionFilter.stateName !== 'All') {
+                    reviewsQuery = query(reviewsQuery, where('stateName', '==', currentRegionFilter.stateName));
+                }
+            }
+
+            onSnapshot(reviewsQuery, (snapshot) => {
+                reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderReviews(reviews);
+            }, (error) => {
+                console.error("监听 Owner Review 数据失败:", error);
+            });
+        }
+
+        function subscribeToLikes() {
+            const likesQuery = query(getLikesCollection());
+            onSnapshot(likesQuery, (snapshot) => {
+                likesMap = {};
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    const reviewId = data.reviewId;
+               
+                    if (!likesMap[reviewId]) {
+                        likesMap[reviewId] = { count: 0, likedByMe: false };
+                    }
+                    likesMap[reviewId].count += 1;
+                    
+                    if (data.userId === userId) {
+                        likesMap[reviewId].likedByMe = true;
+                    }
+                });
+                renderReviews(reviews);
+            }, (error) => {
+   
+                console.error("监听 Likes 数据失败:", error);
+            });
+        }
+
+        /**
+         * 订阅地区数据 (修改)
+         */
+        function subscribeToRegions() {
+            const regionsQuery = query(getRegionsCollection(), orderBy('sortOrder', 'asc'));
+            onSnapshot(regionsQuery, (snapshot) => {
+                const regions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                renderRegionNav(regions); // 渲染 Header 导航
+                renderRegionSelectors();  // 渲染表单中的地区选择器
+
+                if (isOwner) {
+                    renderRegionsInModal(regions);
+                }
+  
+            }, (error) => {
+                console.error("监听 Regions 数据失败:", error);
+            });
+        }
+
+        function handleDelete(id, name) {
+            if (!isOwner) {
+                showModal('权限错误', '只有管理员可以删除记录。', null);
+                return;
+            }
+            showModal(
+                '确认删除',
+                `您确定要删除餐厅 "${name}" 的记录吗？此操作不可逆。`,
+                async () => {
+                    try {
+             
+                        // 1. 删除 Firestore 记录
+                        await deleteDoc(doc(getReviewsCollection(), id));
+                        
+                        // 2. 删除图片 (可选，但推荐)
+        
+                        // 实际图片删除逻辑需要额外的云函数或客户端代码，这里仅处理 Firestore 记录
+                    } catch (error) {
+                        console.error("删除记录失败:", error);
+                        showModal('错误', `删除记录失败: ${error.message}`, null);
+      
+                    }
+                },
+                true // showCancel = true
+            );
+        }
+
+        /**
+         * 创建评论卡片 (修改：添加地区 Tag)
+         */
+        function createReviewCard(review) {
+            const likeInfo = likesMap[review.id] ||
+            { count: 0, likedByMe: false };
+            const ratingConfig = RATING_CONFIG[review.status] || RATING_CONFIG['Can eat'];
+            const timestamp = review.timestamp ?
+            new Date(review.timestamp.seconds * 1000).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }) : '未知日期';
+            
+            // 新增地区 Tag
+            const locationTag = (review.countryCode && review.stateName) ? 
+                `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-medium text-xs mr-2">${review.countryCode} - ${review.stateName}</span>` 
+                : '';
+                
+            const ownerControls = isOwner ?
+            `
+                <div class="flex space-x-2 mt-3 pt-3 border-t border-gray-100">
+                    <button id="summary-btn-${review.id}" class="flex items-center text-xs font-medium text-ai-sparkle hover:text-orange-600 transition">
+                        ✨ AI 总结评论
+                    </button>
+    
+                    <button data-id="${review.id}" class="delete-btn flex items-center text-xs font-medium text-bad hover:text-red-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 10-2 0v6a1 1 0 
+102 0V8z" clip-rule="evenodd" /></svg>
+                        删除
+                    </button>
+                </div>
+                <div id="summary-loading-${review.id}" class="flex items-center text-sm text-ai-sparkle mt-2 hidden">
+              
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    正在生成AI总结...
+                </div>
+                <p id="summary-content-${review.id}" class="text-xs 
+text-gray-600 bg-orange-50/50 p-2 rounded-lg mt-2 hidden"></p>
+            ` : '';
+            
+            return `
+                <div class="review-card bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">${review.restaurantName}</h3>
+                        <span 
+class="px-3 py-1 text-xs font-semibold rounded-full ${ratingConfig.color} text-white whitespace-nowrap">
+                            ${ratingConfig.emoji} ${ratingConfig.text}
+                        </span>
+                    </div>
+                    
+                    ${review.address && review.address !== '未提供' ? `<p class="text-xs text-gray-400 mb-2 truncate">${review.address}</p>` : ''}
+                    <p class="text-sm text-gray-600 mb-3">${review.comment}</p>
+                    
+                    ${review.imageUrl ?
+                    `
+                        <img src="${review.imageUrl}" alt="Restaurant image" class="w-full h-40 object-cover rounded-lg mb-3 shadow-md cursor-pointer" onclick="window.open('${review.imageUrl}', '_blank')">
+                    ` : ''}
+
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                 
+                        <div class="flex space-x-2">
+                            ${locationTag} <span class="bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-full font-medium">${review.category}</span>
+                        </div>
+                        <span class="text-gray-400">记录于 ${timestamp}</span>
+                    </div>
+
+                    <div class="flex justify-between items-end">
+                  
+                        <button id="like-btn-${review.id}" data-liked="${likeInfo.likedByMe}" class="flex items-center text-sm font-medium ${likeInfo.likedByMe ? 'text-useful' : 'text-gray-400 hover:text-useful'} transition mt-3">
+                            <svg class="h-5 w-5 mr-1 ${likeInfo.likedByMe ? 'fill-current' : 'fill-none stroke-current'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h-4v4h4v-4zM7 10h2v4h-2v-4zM16 10h2v4h-2v-4zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        
+                            Found this useful (${likeInfo.count})
+                        </button>
+                        ${ownerControls}
+                    </div>
+         
+                </div>
+            `;
+        }
+
+        function renderReviews(allReviews) {
+            const listContainer = document.getElementById('reviews-list');
+            const totalCountEl = document.getElementById('total-count');
+            const emptyMessage = document.getElementById('empty-message');
+            const filterButtonsContainer = document.getElementById('filter-buttons');
+
+            if (!listContainer || !totalCountEl || !filterButtonsContainer) return;
+            // 1. 生成筛选按钮
+            const statuses = Object.keys(RATING_CONFIG);
+            filterButtonsContainer.innerHTML = statuses.map(status => {
+                const config = RATING_CONFIG[status];
+                const isActive = currentFilter === status;
+                return `
+                    <button data-filter="${status}" class="filter-btn px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition ${isActive ? `${config.color} text-white shadow-md` : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}">
+ 
+                        ${config.emoji} ${config.text}
+                    </button>
+                `;
+            }).join('');
+            // 重新绑定筛选按钮事件
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.onclick = function() {
+                    currentFilter = this.getAttribute('data-filter');
+                    renderReviews(allReviews); // 重新渲染以应用新筛选器
+                };
+      
+            });
+
+            // 2. 筛选和渲染评论
+            const filteredReviews = currentFilter === 'All'
+                ?
+            allReviews
+                : allReviews.filter(review => review.status === currentFilter);
+            totalCountEl.textContent = `总共 ${filteredReviews.length} 条记录`;
+            listContainer.innerHTML = '';
+
+            if (filteredReviews.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                return;
+            } else {
+                emptyMessage.classList.add('hidden');
+            }
+
+            // 使用 DocumentFragment 提高性能
+            const fragment = document.createDocumentFragment();
+            filteredReviews.forEach(review => {
+                const div = document.createElement('div');
+                div.innerHTML = createReviewCard(review).trim();
+                fragment.appendChild(div.firstChild);
+            });
+            listContainer.appendChild(fragment);
+
+            // 3. 绑定操作按钮事件
+            filteredReviews.forEach(review => {
+                if (isOwner) {
+                    const deleteButton = document.querySelector(`.delete-btn[data-id="${review.id}"]`);
+                    if (deleteButton) {
+                    
+                        deleteButton.addEventListener('click', (e) => {
+                            handleDelete(review.id, review.restaurantName);
+                        });
+                    }
+
+                    
+                    const summaryButton = document.getElementById(`summary-btn-${review.id}`);
+                    if (summaryButton) {
+                        summaryButton.addEventListener('click', () => {
+                            generateReviewSummary(review.id, review.restaurantName, review.status, review.comment);
+                 
+                        });
+                    }
+                }
+                
+                const likeButton = document.getElementById(`like-btn-${review.id}`);
+                if (likeButton) { 
+   
+                    likeButton.addEventListener('click', (e) => {
+                        const isLiked = e.currentTarget.getAttribute('data-liked') === 'true';
+                        handleLike(review.id, isLiked);
+                    });
+                }
+            });
+        }
+        
+        // --- T&C 逻辑 ---
+        const TERMS_ACCEPTED_KEY = 'termsAccepted';
+        const TNC_MODAL_ID = 'terms-and-conditions-modal';
+
+        function checkTermsAndConditions() {
+            const isAccepted = localStorage.getItem(TERMS_ACCEPTED_KEY) === 'true';
+            const tncModal = document.getElementById(TNC_MODAL_ID);
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const appContainer = document.getElementById('app-container');
+            // 检查是否已接受条款
+            if (isAccepted) {
+                // 已接受，隐藏 T&C 模态框，显示加载指示器，继续加载应用
+                if (tncModal) tncModal.classList.add('hidden');
+                if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+                if (appContainer) appContainer.classList.remove('hidden');
+                initializeFirebase();
+            } else {
+                // 未接受，显示 T&C 模态框，隐藏加载指示器和应用主体
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                if (appContainer) appContainer.classList.add('hidden');
+                if (tncModal) {
+                    tncModal.classList.remove('hidden');
+                    bindTermsAndConditionsEvents();
+                }
+            }
+        }
+
+        function bindTermsAndConditionsEvents() {
+            document.getElementById('accept-terms-btn').onclick = handleAcceptTerms;
+            document.getElementById('decline-terms-btn').onclick = handleDeclineTerms;
+        }
+
+        function handleAcceptTerms() {
+            // 1. 存储接受状态 (即使是匿名用户也要存储)
+            localStorage.setItem(TERMS_ACCEPTED_KEY, 'true');
+            // 2. 隐藏 T&C 模态框
+            document.getElementById(TNC_MODAL_ID).classList.add('hidden');
+            // 3. 恢复加载指示器并初始化应用
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            initializeFirebase();
+        }
+
+        function handleDeclineTerms() {
+            // 拒绝条款，跳转到 index.html
+            window.location.href = 'index.html';
+        }
+        
+        // --- 绑定新的评分标准说明按钮 (新增) ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const ratingBtn = document.getElementById('show-rating-standard-btn');
+             if (ratingBtn) {
+                 ratingBtn.onclick = () => {
+                     showModal('评分标准说明 / Rating Standard', RATING_EXPLANATION_HTML, null, true, true);
+                 };
+             }
+        });
+        
+        window.onload = checkTermsAndConditions;
+    </script>
+</body>
+</html>
