@@ -804,5 +804,92 @@
         // 应用程序入口点：首先检查 T&C
         window.onload = checkTermsAndConditions;
     </script>
+
+<script type="module">
+// 新增：修改 Firebase 登录逻辑，只修改必要部分
+// 1️⃣ 指定管理员 Gmail 地址
+const ADMIN_EMAIL = 'your_admin@gmail.com'; // 请替换为你的管理员 Gmail
+
+// 2️⃣ Google 登录修改
+const signInWithGoogle = async () => {
+  try {
+    const provider = new firebase.GoogleAuthProvider();
+    const result = await firebase.signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // 检查是否是管理员邮箱
+    if (user.email === ADMIN_EMAIL) {
+      isAdmin = true;
+      showModal('管理员登录成功', `欢迎管理员 ${user.email}`);
+    } else {
+      isAdmin = false;
+      showModal('用户登录成功', `欢迎 ${user.email}`);
+    }
+
+    isLoggedIn = true;
+    currentUserId = user.uid;
+    updateUIBasedOnAuth();
+
+  } catch (error) {
+    console.error('Google 登录失败:', error);
+    showModal('登录失败', '无法通过 Google 登录，请重试。');
+  }
+};
+
+// 3️⃣ 修改点赞逻辑：只有登录用户可用（匿名或管理员都可）
+const handleLike = async (reviewId, isLiked) => {
+  if (!isLoggedIn) {
+    showModal('登录提示', '请先输入电子邮件以登录。');
+    return;
+  }
+  try {
+    const reviewRef = firebase.doc(db, getCollectionPath(), reviewId);
+    const updateField = isLiked ? firebase.arrayRemove(currentUserId) : firebase.arrayUnion(currentUserId);
+    await firebase.updateDoc(reviewRef, { likedBy: updateField });
+  } catch (error) {
+    console.error('更新点赞失败:', error);
+    showModal('操作失败', '无法更新点赞状态。');
+  }
+};
+
+// 4️⃣ 新增：普通用户只需输入 Email 登录（无需密码）
+window.signInWithEmailOnly = async () => {
+  const email = prompt('请输入您的电子邮件地址以登录');
+  if (!email) return;
+  // 模拟 Email 登录（仅本地会话，不访问密码）
+  isLoggedIn = true;
+  isAdmin = (email === ADMIN_EMAIL);
+  currentUserId = email;
+  showModal('登录成功', isAdmin ? '管理员已登录' : `欢迎 ${email}`);
+  updateUIBasedOnAuth();
+};
+
+// 5️⃣ 修改 UI 更新：增加 Email 登录按钮
+const updateUIBasedOnAuth = () => {
+  const authStatusDiv = document.getElementById('auth-status');
+  const adminFormContainer = document.getElementById('admin-form-container');
+
+  if (isLoggedIn) {
+    authStatusDiv.innerHTML = `
+      <div class="flex items-center space-x-2">
+        <span class="text-sm font-medium text-gray-600">
+          ${isAdmin ? '👑 管理员: ' : '👋 用户: '} ${currentUserId}
+        </span>
+        <button onclick="handleSignOut()" class="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition">登出</button>
+      </div>`;
+    adminFormContainer.classList.toggle('hidden', !isAdmin);
+  } else {
+    authStatusDiv.innerHTML = `
+      <div class="flex items-center space-x-2">
+        <button onclick="signInWithEmailOnly()" class="px-3 py-1 bg-primary-blue text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition">Email 登录</button>
+      </div>`;
+    adminFormContainer.classList.add('hidden');
+  }
+};
+</script>
+
+
+    
 </body>
 </html>
+
