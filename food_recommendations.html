@@ -272,7 +272,15 @@
         let allReviewsData = []; // 存储所有评论的原始数据
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        export const firebaseConfig = {
+   
+    apiKey: "AIzaSyCD7f8ZnlXZuI_DiBc_M2c9jl44WajJMhw",
+    authDomain: "abyss123-project.firebaseapp.com",
+    projectId: "abyss123-project",
+    storageBucket: "abyss123-project.firebasestorage.app",
+    messagingSenderId: "233505718695",
+    appId: "1:233505718695:web:1a62ca261f9ebd9beaf682"
+  };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
         
         // 默认标签列表 - 已更新以包含中国和泰国
@@ -892,4 +900,5 @@ const updateUIBasedOnAuth = () => {
     
 </body>
 </html>
+
 
