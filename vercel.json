@@ -1,0 +1,4 @@
+{
+  "buildCommand": "sed -i \"s|%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%|$VERCEL_GEMINI_API_KEY|g\" AI\\ RPG\\ Story\\ Simulator.html",
+  "outputDirectory": "./"
+}
