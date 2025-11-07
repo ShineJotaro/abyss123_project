@@ -115,17 +115,90 @@
         const submitActionBtn = document.getElementById('submit-action-btn');
         const saveStoryBtn = document.getElementById('save-story-btn');
         const loadStoryBtn = document.getElementById('load-story-btn');
+// --- 更新 UI 基于认证状态 ---
+const updateUIBasedOnAuth = () => {
+    // 🚨 首先检查本地存储的 Email 登录状态 (移植的核心)
+    const storedEmail = localStorage.getItem('userEmail');
+    
+    // 如果本地存储有 Email，则强制设置为 Email 登录状态
+    if (storedEmail) {
+        currentUserEmail = storedEmail;
+        isLoggedIn = true;
+    } else {
+        // 否则，回退到 Firebase 状态（匿名或登出）
+        isLoggedIn = !auth.currentUser.isAnonymous && isFirebaseConfigured;
+        currentUserEmail = isLoggedIn ? 
+            auth.currentUser.email : 
+            `匿名用户 (${auth.currentUser.uid.substring(0, 8)}...)`;
+    }
 
-        // 根据认证状态更新 UI
-        const updateUIBasedOnAuth = () => {
-            const authSection = document.getElementById('auth-section');
-            const welcomeText = document.getElementById('welcome-text');
-            
-            // 检查 Firebase 配置是否为占位符
-            const isFirebaseConfigured = !firebaseConfig.apiKey.includes('YOUR_FIREBASE');
+    const authSection = document.getElementById('auth-section');
+    const welcomeText = document.getElementById('welcome-text');
+    const isFirebaseConfigured = !firebaseConfig.apiKey.includes('YOUR_FIREBASE');
+
+    if (isLoggedIn) {
+        authSection.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-700">👋 用户: ${currentUserEmail} </span>
+                <button onclick="handleSignOut()" id="sign-out-btn" class="px-3 py-1 bg-admin-red text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition">登出</button>
+            </div>
+        `;
+        welcomeText.textContent = `欢迎，${currentUserEmail}！`;
+        loadStoryBtn.classList.remove('hidden');
+        if (currentStory) saveStoryBtn.classList.remove('hidden');
+
+        // --- 移植自 food_recommendations.html 的 Email 登录逻辑 ---
+const signInWithEmailOnly = () => {
+    const email = prompt("请输入您的电子邮件地址以登录 (例如: user@example.com)：");
+    if (!email) return;
+
+    // 简单的邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showModal('输入错误', '请输入有效的电子邮件地址。');
+        return;
+    }
+
+    // 保存邮箱到本地存储 (关键移植点)
+    localStorage.setItem('userEmail', email);
+    currentUserEmail = email;
+    isLoggedIn = true;
+    
+    updateUIBasedOnAuth();
+    showModal('登录成功', `欢迎 ${email} 登录`);
+};
+
+// 挂载到全局 (用于 HTML 中 onclick 调用)
+window.signInWithEmailOnly = signInWithEmailOnly;
+// ----------------------------------------------------
+
+    } else {
+        // 未登录状态
+        authSection.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <button onclick="signInWithEmailOnly()" id="sign-in-prompt" class="px-3 py-1 bg-primary-blue text-white text-sm font-medium rounded-lg hover:bg-indigo-600 transition">Email 登录</button>
+            </div>
+        `;
+        
+        if (!isFirebaseConfigured) {
+            welcomeText.textContent = '欢迎！Firebase已配置，保存/加载功能已启用。';
+        } else {
+            welcomeText.textContent = '欢迎，匿名玩家！故事将不会被保存。';
+        }
+        
+        loadStoryBtn.classList.add('hidden');
+        saveStoryBtn.classList.add('hidden');
+    }
+    
+    // 确保 Firebase 配置检查逻辑在底部运行 (若未配置，则禁用保存/加载)
+    if (!isFirebaseConfigured) {
+        loadStoryBtn.classList.add('hidden');
+        saveStoryBtn.classList.add('hidden');
+    }
+};
 
             if (auth.currentUser) {
-                // 在 Vercel 部署中，我们默认只有匿名用户，除非用户实现了自定义登录
+                
                 isLoggedIn = !auth.currentUser.isAnonymous && isFirebaseConfigured; 
                 currentUserEmail = isLoggedIn ? auth.currentUser.email : `匿名用户 (${auth.currentUser.uid.substring(0, 8)}...)`;
                 
@@ -138,7 +211,7 @@
                 `;
                 
                 if (!isFirebaseConfigured) {
-                    welcomeText.textContent = '欢迎！Firebase未配置，保存/加载功能已禁用。';
+                    welcomeText.textContent = '欢迎！Firebase已配置，保存/加载功能已启用。';
                     loadStoryBtn.classList.add('hidden');
                     saveStoryBtn.classList.add('hidden');
                 } else {
@@ -168,21 +241,27 @@
             }
         };
 
-        // 登出处理
-        const handleSignOut = async () => {
-            try {
-                await signOut(auth);
-                // 登出后重置为匿名用户
-                await signInAnonymously(auth);
-                showModal('登出成功', '您已登出，当前以匿名身份继续。');
-                currentStory = null; // 清除当前故事状态
-                updateUIBasedOnAuth();
-            } catch (error) {
-                console.error("登出失败:", error);
-                showModal('登出失败', `登出错误: ${error.message}`);
-            }
-        };
-
+       // 登出处理
+const handleSignOut = async () => {
+    try {
+        await signOut(auth);
+        // 登出后重置为匿名用户 
+        await signInAnonymously(auth);
+        
+        // 🚨 移植代码: 清理本地存储和状态
+        localStorage.removeItem('userEmail'); 
+        currentUserEmail = null; 
+        isLoggedIn = false; 
+        // ---------------------------------
+        
+        showModal('登出成功', '您已登出，当前以匿名身份继续。');
+        currentStory = null; // 清除当前故事状态
+        updateUIBasedOnAuth();
+    } catch (error) {
+        console.error("登出失败:", error);
+        showModal('登出失败', `登出错误: ${error.message}`);
+    }
+};
         // Firebase 初始化 - 注意：此函数不再在 DOMContentLoaded 中自动调用
         const initializeFirebase = async () => {
             try {
@@ -199,13 +278,22 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // Vercel 环境下，我们使用匿名登录
+                
                 await signInAnonymously(auth);
 
                 onAuthStateChanged(auth, (user) => {
-                    isAuthReady = true;
-                    updateUIBasedOnAuth();
-                });
+    isAuthReady = true;
+    
+    // 🚨 移植代码: 检查并恢复 Email 登录状态
+    const storedEmail = localStorage.getItem('userEmail');
+    if (storedEmail) {
+        currentUserEmail = storedEmail;
+        isLoggedIn = true;
+    }
+    // ---------------------------------
+    
+    updateUIBasedOnAuth();
+});
                 
             } catch (error) {
                 console.error("Firebase 初始化失败:", error);
@@ -781,6 +869,7 @@ const checkTermsAndConditions = () => {
 </footer>
 </body>
 </html>
+
 
 
 
