@@ -253,9 +253,12 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         
-        const apiKey = typeof VERCEL_GEMINI_API_KEY !== 'undefined' ? VERCEL_GEMINI_API_KEY : ''; 
+       // 定义全局的 API Key
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+const apiKey = typeof VERCEL_GEMINI_API_KEY !== 'undefined' ? VERCEL_GEMINI_API_KEY : '';
 // 假设 Vercel 会注入名为 VERCEL_GEMINI_API_KEY 的变量。
 // 在您的 Vercel 环境中，请确保添加名为 GEMINI_API_KEY 的环境变量。
+
 
         // Firestore 全局实例
         let app = null;
@@ -628,32 +631,34 @@
         /**
          * 使用指数退避重试机制进行 API 调用。
          */
-        async function fetchWithRetry(url, payload, retries = 3) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+       async function fetchWithRetry(url, payload, retries = 3) {
+    // 构建最终的带API Key的URL
+    const finalUrl = `${url}?key=${apiKey}`; // <-- 这里添加了API Key
+    
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(finalUrl, { // <-- 使用 finalUrl
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                    if (!response.ok) {
-                        const errorBody = await response.json();
-                        throw new Error(`API error ${response.status}: ${JSON.stringify(errorBody)}`);
-                    }
-
-                    return await response.json();
-                } catch (error) {
-                    console.error(`API 调用失败 (尝试 ${i + 1}/${retries}):`, error);
-                    if (i === retries - 1) throw error; // 最后一次失败，抛出错误
-
-                    // 指数退避 (1s, 2s, 4s...)
-                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(`API error ${response.status}: ${JSON.stringify(errorBody)}`);
             }
-        }
 
+            return await response.json();
+        } catch (error) {
+            console.error(`API 调用失败 (尝试 ${i + 1}/${retries}):`, error);
+            if (i === retries - 1) throw error; // 最后一次失败，抛出错误
+
+            // 指数退避 (1s, 2s, 4s...)
+            const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
 
         /**
          * 构建系统指令。
@@ -904,4 +909,5 @@
     </script>
 </body>
 </html>
+
 
