@@ -539,41 +539,35 @@
             };
         };
 
-        // T&C 模态框检查 (新逻辑)
-        const checkTermsAndConditions = () => {
-            // 使用 sessionStorage
-            const accepted = sessionStorage.getItem('T&C_Accepted') === 'true';
-            const termsModalBackdrop = document.getElementById('terms-and-conditions-modal');
-            
-            // 获取接受和拒绝按钮 (注意：拒绝按钮 ID 已更新为 decline-terms-btn)
-            const acceptBtn = termsModalBackdrop.querySelector('#accept-terms-btn');
-            const declineBtn = termsModalBackdrop.querySelector('#decline-terms-btn');
+       // T&C 模态框检查
+const checkTermsAndConditions = () => {
+    const accepted = sessionStorage.getItem('T&C_Accepted') === 'true';
+    const termsModalBackdrop = document.getElementById('terms-and-conditions-modal');
+    const acceptBtn = termsModalBackdrop.querySelector('#accept-terms-btn');
+    const declineBtn = termsModalBackdrop.querySelector('#decline-terms-btn');
 
-            if (accepted) {
-                // 如果已接受，则隐藏 T&C，显示加载并初始化 Firebase
-                termsModalBackdrop.classList.add('hidden');
-                document.getElementById('loading-indicator').classList.remove('hidden'); 
-                initializeFirebase();
-            } else {
-                // 如果未接受，则显示 T&C 模态框
-                termsModalBackdrop.classList.remove('hidden');
-                
-                // 处理接受
-                // 使用 { once: true } 确保事件只绑定一次，避免重复调用 initializeFirebase
-                acceptBtn.addEventListener('click', () => {
-                    sessionStorage.setItem('T&C_Accepted', 'true');
-                    termsModalBackdrop.classList.add('hidden');
-                    document.getElementById('loading-indicator').classList.remove('hidden');
-                    initializeFirebase();
-                }, { once: true });
-                
-                // 处理拒绝 - 跳转到首页
-                declineBtn.addEventListener('click', () => {
-                    // 假设 index.html 是应用的入口页或退出页
-                    window.location.href = 'index.html'; 
-                }, { once: true });
-            }
-        };
+    if (accepted) {
+        termsModalBackdrop.classList.add('hidden');
+        document.getElementById('loading-indicator').classList.remove('hidden'); 
+        initializeFirebase();
+    } else {
+        termsModalBackdrop.classList.remove('hidden');
+        
+        // Handle Accept
+        acceptBtn.addEventListener('click', () => {
+            sessionStorage.setItem('T&C_Accepted', 'true');
+            termsModalBackdrop.classList.add('hidden');
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            initializeFirebase();
+        }, { once: true });
+        
+        // Handle Decline - 跳转到首页
+        declineBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        }, { once: true });
+    }
+};
+
 
         // --- 初始化和事件绑定 ---
 
@@ -788,4 +782,5 @@
 </footer>
 </body>
 </html>
+
 
