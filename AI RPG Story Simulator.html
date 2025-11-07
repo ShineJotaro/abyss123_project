@@ -252,9 +252,10 @@
             getDoc 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 全局变量，用于 Firebase 和 LLM API
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-        const apiKey = ""; // 留空，运行时由 Canvas 自动提供
+        
+        const apiKey = typeof VERCEL_GEMINI_API_KEY !== 'undefined' ? VERCEL_GEMINI_API_KEY : ''; 
+// 假设 Vercel 会注入名为 VERCEL_GEMINI_API_KEY 的变量。
+// 在您的 Vercel 环境中，请确保添加名为 GEMINI_API_KEY 的环境变量。
 
         // Firestore 全局实例
         let app = null;
@@ -903,3 +904,4 @@
     </script>
 </body>
 </html>
+
