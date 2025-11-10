@@ -182,24 +182,31 @@
                 </button>
             </div>
 
-            <!-- 管理按钮 -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <!-- 匿名用户禁用保存/加载 -->
-                <button id="save-button" class="btn-base bg-useful hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50" disabled>
-                    保存进度 (仅登录)
-                </button>
-                <button id="load-button" class="btn-base bg-useful hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50" disabled>
-                    加载进度 (仅登录)
-                </button>
-                <button id="new-game-button" class="btn-base bg-admin-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    <span id="new-game-text">开始新游戏</span>
-                </button>
-                <button id="clear-history-button" class="btn-base bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50">
-                    清空对话
-                </button>
-            </div>
+           <!-- 修改管理按鈕區域 -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <button id="save-button" class="btn-base bg-useful hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50" disabled>
+        保存進度 (僅登錄)
+    </button>
+    <button id="load-button" class="btn-base bg-useful hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50" disabled>
+        加載進度 (僅登錄)
+    </button>
+    <button id="export-txt-button" class="btn-base bg-random-green hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg">
+        導出故事
+    </button>
+    <button id="import-txt-button" class="btn-base bg-ai-sparkle hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg">
+        導入故事
+    </button>
+</div>
+
+<!-- 隱藏的檔案輸入元素 -->
+<input type="file" id="txt-file-input" accept=".txt" class="hidden">
+            
+
+            
             
         </main>
+
+        
 
         <!-- 消息模态框 (用于替代 alert/confirm) -->
         <div id="message-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300" aria-modal="true" role="dialog">
@@ -368,6 +375,244 @@ function signOut() {
     showModal('登出成功', '您已成功登出。');
 }
 
+// TXT 導出功能
+function exportStoryToTxt() {
+    if (storyHistory.length === 0) {
+        showModal('導出失敗', '沒有故事內容可以導出。');
+        return;
+    }
+
+    try {
+        // 構建 TXT 內容
+        let txtContent = `AI 奇幻冒險故事存檔\n`;
+        txtContent += `生成時間: ${new Date().toLocaleString('zh-TW')}\n`;
+        txtContent += `故事類型: ${genreSelect.value}\n`;
+        txtContent += `角色設定: ${characterInput.value}\n`;
+        txtContent += `世界觀: ${worldInput.value}\n`;
+        txtContent += `開場設定: ${openingInput.value}\n`;
+        txtContent += `="=".repeat(50)}\n\n`;
+
+        // 添加故事內容
+        storyHistory.forEach((item, index) => {
+            if (item.role === 'user') {
+                txtContent += `[第 ${index + 1} 回合 - 您的行動]\n`;
+                txtContent += `> ${item.text}\n\n`;
+            } else if (item.role === 'model') {
+                txtContent += `[第 ${index + 1} 回合 - AI 敘述]\n`;
+                txtContent += `${item.text}\n\n`;
+                txtContent += `="=".repeat(50)}\n\n`;
+            }
+        });
+
+        // 添加元數據（用於重新導入）
+        const metadata = {
+            version: '1.0',
+            timestamp: new Date().toISOString(),
+            character: characterInput.value,
+            world: worldInput.value,
+            opening: openingInput.value,
+            genre: genreSelect.value,
+            history: storyHistory
+        };
+
+        txtContent += `\n\n<!-- METADATA: ${JSON.stringify(metadata)} -->`;
+
+        // 創建下載
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const fileName = `story_${new Date().toISOString().slice(0, 10)}_${characterInput.value || 'adventure'}.txt`;
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showModal('導出成功', `故事已導出為 ${fileName}，您可以保存這個檔案以便將來繼續。`);
+
+    } catch (error) {
+        console.error('導出失敗:', error);
+        showModal('導出失敗', `導出過程中發生錯誤: ${error.message}`);
+    }
+}
+            // TXT 導入功能
+function importStoryFromTxt() {
+    const fileInput = document.getElementById('txt-file-input');
+    fileInput.click();
+}
+
+// 處理檔案選擇
+document.getElementById('txt-file-input').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const content = e.target.result;
+            processImportedTxt(content, file.name);
+        } catch (error) {
+            console.error('檔案讀取失敗:', error);
+            showModal('導入失敗', '無法讀取檔案內容。');
+        }
+    };
+    
+    reader.onerror = function() {
+        showModal('導入失敗', '讀取檔案時發生錯誤。');
+    };
+    
+    reader.readAsText(file);
+});
+
+// 處理導入的 TXT 內容
+function processImportedTxt(content, fileName) {
+    try {
+        // 嘗試從元數據恢復
+        const metadataMatch = content.match(/<!-- METADATA: ({.*?}) -->/);
+        
+        if (metadataMatch) {
+            // 有元數據的完整導入
+            const metadata = JSON.parse(metadataMatch[1]);
+            return restoreFromMetadata(metadata, fileName);
+        } else {
+            // 純文本文件的智能導入
+            return restoreFromPlainText(content, fileName);
+        }
+        
+    } catch (error) {
+        console.error('處理導入檔案失敗:', error);
+        showModal('導入失敗', `檔案格式不正確: ${error.message}`);
+    }
+}
+
+// 從元數據恢復
+function restoreFromMetadata(metadata, fileName) {
+    // 檢查版本兼容性
+    if (!metadata.version || !metadata.history) {
+        throw new Error('檔案格式不完整，缺少必要的元數據。');
+    }
+
+    // 確認用戶是否要覆蓋當前進度
+    showModal('確認導入', 
+        `即將導入故事 "${fileName}"。這將覆蓋您當前的遊戲進度，確定要繼續嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            // 恢復所有狀態
+            storyHistory = metadata.history || [];
+            characterInput.value = metadata.character || '';
+            worldInput.value = metadata.world || '';
+            openingInput.value = metadata.opening || '';
+            genreSelect.value = metadata.genre || '奇幻史诗';
+            
+            // 更新 UI
+            isGameStarted = storyHistory.length > 0;
+            displayStory();
+            updateUIState();
+            
+            showModal('導入成功', 
+                `故事 "${fileName}" 已成功導入！您可以繼續這個冒險。\n\n` +
+                `進度: ${storyHistory.length} 回合對話\n` +
+                `角色: ${characterInput.value || '未設定'}`);
+        }
+    });
+}
+
+// 從純文本恢復（兼容舊格式）
+function restoreFromPlainText(content, fileName) {
+    // 解析純文本格式
+    const lines = content.split('\n');
+    const restoredHistory = [];
+    let currentRole = null;
+    let currentText = [];
+    
+    lines.forEach(line => {
+        line = line.trim();
+        
+        if (line.startsWith('[第') && line.includes('回合 - 您的行動]')) {
+            // 保存上一個對話
+            if (currentRole && currentText.length > 0) {
+                restoredHistory.push({
+                    role: currentRole,
+                    text: currentText.join('\n').trim()
+                });
+            }
+            // 開始新的用戶對話
+            currentRole = 'user';
+            currentText = [];
+        } 
+        else if (line.startsWith('[第') && line.includes('回合 - AI 敘述]')) {
+            // 保存上一個對話
+            if (currentRole && currentText.length > 0) {
+                restoredHistory.push({
+                    role: currentRole,
+                    text: currentText.join('\n').trim()
+                });
+            }
+            // 開始新的 AI 對話
+            currentRole = 'model';
+            currentText = [];
+        }
+        else if (line.startsWith('>') && currentRole === 'user') {
+            // 用戶行動內容
+            currentText.push(line.substring(1).trim());
+        }
+        else if (line.length > 0 && !line.includes('='.repeat(50)) && 
+                 !line.startsWith('AI 奇幻冒險故事存檔') &&
+                 !line.startsWith('生成時間:') &&
+                 !line.startsWith('故事類型:') &&
+                 !line.startsWith('角色設定:') &&
+                 !line.startsWith('世界觀:') &&
+                 !line.startsWith('開場設定:')) {
+            // AI 敘述內容
+            if (currentRole) {
+                currentText.push(line);
+            }
+        }
+    });
+    
+    // 保存最後一個對話
+    if (currentRole && currentText.length > 0) {
+        restoredHistory.push({
+            role: currentRole,
+            text: currentText.join('\n').trim()
+        });
+    }
+    
+    if (restoredHistory.length === 0) {
+        throw new Error('無法從檔案中解析出有效的故事內容。');
+    }
+    
+    // 確認導入
+    showModal('確認導入', 
+        `找到 ${restoredHistory.length} 回合對話。這將覆蓋您當前的遊戲進度，確定要繼續嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            storyHistory = restoredHistory;
+            isGameStarted = storyHistory.length > 0;
+            
+            // 嘗試從檔案名提取角色名
+            const charMatch = fileName.match(/story_.*_(.*)\.txt/);
+            if (charMatch && charMatch[1] !== 'adventure') {
+                characterInput.value = charMatch[1];
+            }
+            
+            displayStory();
+            updateUIState();
+            
+            showModal('導入成功', 
+                `故事已從 "${fileName}" 導入！\n\n` +
+                `已恢復 ${restoredHistory.length} 回合對話。\n` +
+                `請檢查角色設定是否正確，然後繼續您的冒險。`);
+        }
+    });
+}
+
+        
 // 新增：更新認證 UI 的函數
 function updateAuthUI() {
     const loginButton = document.getElementById('login-button');
@@ -479,7 +724,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // 新增登錄按鈕事件監聽
     document.getElementById('login-button').addEventListener('click', signInWithEmail);
     document.getElementById('logout-button').addEventListener('click', signOut);
+    // 在現有的事件監聽器部分添加
+document.getElementById('export-txt-button').addEventListener('click', exportStoryToTxt);
+document.getElementById('import-txt-button').addEventListener('click', importStoryFromTxt);
 });
+
+        // 導入前的故事預覽
+function showStoryPreview(history, fileName) {
+    const previewContent = history.slice(-3).map(item => {
+        if (item.role === 'user') {
+            return `您: ${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}`;
+        } else {
+            return `AI: ${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}`;
+        }
+    }).join('\n');
+
+    showModal('故事預覽', 
+        `檔案: ${fileName}\n` +
+        `對話回合: ${history.length}\n` +
+        `最近內容:\n${previewContent}\n\n` +
+        `確定要導入這個故事嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            storyHistory = history;
+            isGameStarted = true;
+            displayStory();
+            updateUIState();
+            showModal('導入成功', '故事已成功導入！');
+        }
+    });
+}
 
         
 
@@ -497,13 +772,14 @@ document.addEventListener('DOMContentLoaded', function() {
         /**
  * 將狀態保存到 Firestore。
  */
+/**
+ * 將狀態保存到 Firestore。
+ */
 async function saveState() {
-    // 修改：使用新的認證檢查
     if (!isUserAuthenticated) {
-        showModal('保存失敗', '請先登錄才能保存進度。點擊"登錄保存進度"按鈕進行登錄。');
+        showModal('保存失敗', '請先登錄才能保存進度。');
         return;
     }
-    
     if (!isAuthReady || !currentUserId) {
         showModal('錯誤', '應用尚未初始化或身份驗證失敗，無法保存。');
         return;
@@ -520,17 +796,120 @@ async function saveState() {
             opening: openingInput.value,
             genre: genreSelect.value,
             timestamp: new Date().toISOString(),
-            userEmail: currentUserEmail // 新增：保存用戶郵箱
+            userEmail: currentUserEmail
         };
+
+        console.log("嘗試保存到路徑:", docRef.path);
+        console.log("保存的數據:", state);
 
         await setDoc(docRef, state);
         showModal('保存成功', '遊戲進度已成功保存到雲端。');
+        
     } catch (error) {
         console.error("保存進度到 Firestore 失敗:", error);
-        showModal('保存失敗', `保存數據時發生錯誤: ${error.message}`);
+        
+        // 更詳細的錯誤信息
+        let errorMessage = `保存數據時發生錯誤: ${error.message}`;
+        
+        if (error.code === 'permission-denied') {
+            errorMessage = `
+                權限被拒絕！請檢查：
+                1. Firestore 安全規則設置
+                2. 匿名登錄是否啟用
+                3. 數據庫是否已正確初始化
+                
+                詳細錯誤: ${error.message}
+            `;
+        }
+        
+        showModal('保存失敗', errorMessage);
     }
 }
 
+
+        // 本地存儲備用方案
+function saveToLocalStorage() {
+    const state = {
+        history: storyHistory,
+        character: characterInput.value,
+        world: worldInput.value,
+        opening: openingInput.value,
+        genre: genreSelect.value,
+        timestamp: new Date().toISOString(),
+        userEmail: currentUserEmail
+    };
+    
+    try {
+        localStorage.setItem('rpg_game_backup', JSON.stringify(state));
+        console.log("遊戲已備份到本地存儲");
+        return true;
+    } catch (error) {
+        console.error("本地備份失敗:", error);
+        return false;
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('rpg_game_backup');
+        if (saved) {
+            const data = JSON.parse(saved);
+            
+            // 恢復狀態
+            storyHistory = data.history || [];
+            characterInput.value = data.character || '';
+            worldInput.value = data.world || '';
+            openingInput.value = data.opening || '';
+            genreSelect.value = data.genre || '奇幻史诗';
+            
+            // 刷新 UI
+            displayStory();
+            isGameStarted = storyHistory.length > 0;
+            updateUIState();
+            
+            return true;
+        }
+    } catch (error) {
+        console.error("加載本地備份失敗:", error);
+    }
+    return false;
+}
+
+// 修改保存函數，添加本地備份
+async function saveState() {
+    // ... 前面的檢查代碼不變
+    
+    try {
+        const docRef = getSaveDocRef();
+        if (!docRef) throw new Error("無法獲取 Firestore 文檔引用。");
+
+        const state = {
+            // ... 狀態數據
+        };
+
+        await setDoc(docRef, state);
+        
+        // 同時保存到本地備份
+        saveToLocalStorage();
+        
+        showModal('保存成功', '遊戲進度已成功保存到雲端和本地。');
+        
+    } catch (error) {
+        console.error("雲端保存失敗:", error);
+        
+        // 嘗試本地備份
+        const localSuccess = saveToLocalStorage();
+        
+        if (localSuccess) {
+            showModal('保存提示', 
+                `雲端保存失敗，但已備份到本地瀏覽器。錯誤: ${error.message}`);
+        } else {
+            showModal('保存失敗', 
+                `雲端和本地保存均失敗: ${error.message}`);
+        }
+    }
+}
+        
         /**
          * 从 Firestore 加载状态。
          */
@@ -1025,6 +1404,7 @@ async function saveState() {
     </script>
 </body>
 </html>
+
 
 
 
