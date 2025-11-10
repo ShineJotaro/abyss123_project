@@ -827,88 +827,7 @@ async function saveState() {
 }
 
 
-        // 本地存儲備用方案
-function saveToLocalStorage() {
-    const state = {
-        history: storyHistory,
-        character: characterInput.value,
-        world: worldInput.value,
-        opening: openingInput.value,
-        genre: genreSelect.value,
-        timestamp: new Date().toISOString(),
-        userEmail: currentUserEmail
-    };
     
-    try {
-        localStorage.setItem('rpg_game_backup', JSON.stringify(state));
-        console.log("遊戲已備份到本地存儲");
-        return true;
-    } catch (error) {
-        console.error("本地備份失敗:", error);
-        return false;
-    }
-}
-
-function loadFromLocalStorage() {
-    try {
-        const saved = localStorage.getItem('rpg_game_backup');
-        if (saved) {
-            const data = JSON.parse(saved);
-            
-            // 恢復狀態
-            storyHistory = data.history || [];
-            characterInput.value = data.character || '';
-            worldInput.value = data.world || '';
-            openingInput.value = data.opening || '';
-            genreSelect.value = data.genre || '奇幻史诗';
-            
-            // 刷新 UI
-            displayStory();
-            isGameStarted = storyHistory.length > 0;
-            updateUIState();
-            
-            return true;
-        }
-    } catch (error) {
-        console.error("加載本地備份失敗:", error);
-    }
-    return false;
-}
-
-// 修改保存函數，添加本地備份
-async function saveState() {
-    // ... 前面的檢查代碼不變
-    
-    try {
-        const docRef = getSaveDocRef();
-        if (!docRef) throw new Error("無法獲取 Firestore 文檔引用。");
-
-        const state = {
-            // ... 狀態數據
-        };
-
-        await setDoc(docRef, state);
-        
-        // 同時保存到本地備份
-        saveToLocalStorage();
-        
-        showModal('保存成功', '遊戲進度已成功保存到雲端和本地。');
-        
-    } catch (error) {
-        console.error("雲端保存失敗:", error);
-        
-        // 嘗試本地備份
-        const localSuccess = saveToLocalStorage();
-        
-        if (localSuccess) {
-            showModal('保存提示', 
-                `雲端保存失敗，但已備份到本地瀏覽器。錯誤: ${error.message}`);
-        } else {
-            showModal('保存失敗', 
-                `雲端和本地保存均失敗: ${error.message}`);
-        }
-    }
-}
         
         /**
          * 从 Firestore 加载状态。
@@ -1404,6 +1323,7 @@ async function saveState() {
     </script>
 </body>
 </html>
+
 
 
 
