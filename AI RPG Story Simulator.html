@@ -106,15 +106,10 @@
             </p>
         </header>
 
-        <!-- Firestore 状态和用户 ID 显示 -->
-        <div id="status-bar" class="mb-4 p-3 bg-indigo-100 rounded-xl shadow-inner text-sm text-indigo-800 flex justify-between items-center">
-             <div id="auth-status">
-                <span id="loading-spinner" class="animate-spin inline-block w-4 h-4 mr-2 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
-                <span id="auth-text">正在初始化...</span>
-             </div>
-             <!-- 这里的 class 变化会在 JS 中处理，以区分匿名/认证用户 -->
-             <span id="user-id-display" class="font-mono text-xs bg-indigo-200 px-2 py-0.5 rounded-md">用户 ID: 加载中...</span>
-        </div>
+        <!-- Status Bar -->
+       <div class="mb-4 p-3 bg-indigo-100 rounded-xl shadow-inner text-sm text-indigo-800 text-center">
+            <span>使用 TXT 文件存储进度</span>
+       </div>
 
         <!-- 故事和输入区域 -->
         <main class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
@@ -176,22 +171,22 @@
                 </button>
             </div>
 
-            <!-- 管理按钮 -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                 <button id="export-txt-button" class="btn-base bg-random-green hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg">
-        導出故事
-    </button>
-    <button id="import-txt-button" class="btn-base bg-ai-sparkle hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg">
-        導入故事
-    </button>
-                
-                <button id="new-game-button" class="btn-base bg-admin-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    <span id="new-game-text">开始新游戏</span>
-                </button>
-                <button id="clear-history-button" class="btn-base bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50">
-                    清空对话
-                </button>
-            </div>
+                      <!-- 管理按钮 -->
+           <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <button id="export-txt-button" class="btn-base bg-random-green hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg">
+       導出故事
+   </button>
+   <button id="import-txt-button" class="btn-base bg-ai-sparkle hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg">
+       導入故事
+   </button>
+               
+               <button id="new-game-button" class="btn-base bg-admin-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
+                   <span id="new-game-text">开始新游戏</span>
+               </button>
+               <button id="clear-history-button" class="btn-base bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50">
+                   清空对话
+               </button>
+           </div>
             <!-- 隱藏的檔案輸入元素 -->
 <input type="file" id="txt-file-input" accept=".txt" class="hidden">
         </main>
@@ -283,11 +278,6 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
         const randomText = document.getElementById('random-text');
         const loadingSpinnerRandom = document.getElementById('loading-spinner-random');
 
-        const authText = document.getElementById('auth-text');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const saveButton = document.getElementById('save-button');
-        const loadButton = document.getElementById('load-button');
         const newGameButton = document.getElementById('new-game-button');
         const clearHistoryButton = document.getElementById('clear-history-button');
 
@@ -329,14 +319,12 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
          * 更新 UI 状态（按钮文本、禁用状态）。
          */
         function updateUIState() {
-            const canInteract = isAuthReady && !isGenerating && !isRandomizing;
+            const canInteract = !isGenerating && !isRandomizing;
             
             generateButton.disabled = !canInteract;
             randomizeButton.disabled = !canInteract || isGameStarted; // 游戏开始后禁用随机生成
             
-            // 匿名用户禁用保存/加载
-            saveButton.disabled = !canInteract || !isGameStarted || !isUserAuthenticated;
-            loadButton.disabled = !canInteract || !isUserAuthenticated;
+            
             
             clearHistoryButton.disabled = !canInteract || !isGameStarted;
 
@@ -423,19 +411,23 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
         /**
          * 阻塞式显示入口条款模态框。
          */
-        function showAcceptanceModal() {
-            modalAccept.onclick = () => {
-                acceptanceModal.classList.add('hidden');
-                appContainer.classList.remove('opacity-0', 'pointer-events-none');
-                initializeFirebase();
-            };
+               function showAcceptanceModal() {
+           modalAccept.onclick = () => {
+               acceptanceModal.classList.add('hidden');
+               appContainer.classList.remove('opacity-0', 'pointer-events-none');
+               // We don't initialize Firebase anymore, so we just show the app.
+               // We can set the status bar to ready.
+               authText.textContent = "就绪";
+               loadingSpinner.classList.add('hidden');
+               userIdDisplay.textContent = "使用 TXT 文件存储";
+           };
 
-            // --- 关键修改：不接受则跳转到 index.html ---
-            modalReject.onclick = () => {
-                window.location.href = 'index.html'; 
-            };
-            // ---------------------------------------------
-        }
+           // --- 关键修改：不接受则跳转到 index.html ---
+           modalReject.onclick = () => {
+               window.location.href = 'index.html'; 
+           };
+           // ---------------------------------------------
+       }
 
         // TXT 導出功能
 function exportStoryToTxt() {
@@ -946,8 +938,6 @@ function showStoryPreview(history, fileName) {
                 openingInput.value = '';
                 actionInput.value = '';
                 
-                // 清理 Firestore 状态 (仅对登录用户)
-                await clearState();
                 
                 updateUIState();
                 showModal('新游戏开始', '新游戏已就绪。请设定您的世界观、角色并开始冒险！');
@@ -963,8 +953,7 @@ function showStoryPreview(history, fileName) {
                 generateStory();
             }
         });
-        saveButton.addEventListener('click', saveState);
-        loadButton.addEventListener('click', loadState);
+        
         newGameButton.addEventListener('click', startNewGame);
         clearHistoryButton.addEventListener('click', async () => {
              const confirm = await showModal(
@@ -987,5 +976,6 @@ function showStoryPreview(history, fileName) {
     </script>
 </body>
 </html>
+
 
 
