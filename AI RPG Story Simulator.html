@@ -314,53 +314,76 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
         /**
          * 初始化 Firebase 应用和 Firestore/Auth 服务，并进行身份验证。
          */
-        async function initializeFirebase() {
-            try {
-                // MANDATORY: 获取全局提供的配置和 token
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                
-                authText.textContent = '正在连接到服务器...';
-                
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+        // 添加默認配置
+const defaultFirebaseConfig = {
+    apiKey: "AIzaSyCD7f8ZnlXZuI_DiBc_M2c9jl44WajJMhw",
+    authDomain: "abyss123-project.firebaseapp.com",
+    projectId: "abyss123-project",
+    storageBucket: "abyss123-project.firebasestorage.app",
+    messagingSenderId: "233505718695",
+    appId: "1:233505718695:web:1a62ca261f9ebd9beaf682"
+};
 
-                // 尝试使用 custom token 登录，否则使用匿名登录
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+async function initializeFirebase() {
+    try {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // 如果沒有全局配置，使用默認配置
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : defaultFirebaseConfig;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        authText.textContent = '正在連接到服務器...';
+        
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        if (initialAuthToken) {
+            await signInWithCustomToken(auth, initialAuthToken);
+        } else {
+            await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                isUserAuthenticated = !user.isAnonymous; 
+                
+                userIdDisplay.textContent = `用戶 ID: ${currentUserId}`;
+                if (isUserAuthenticated) {
+                    authText.textContent = '已登錄，可保存故事。';
+                    userIdDisplay.classList.replace('bg-indigo-200', 'bg-green-200');
                 } else {
-                    await signInAnonymously(auth);
+                    authText.textContent = '匿名模式，故事不會保存。';
+                    userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
                 }
+            } else {
+                currentUserId = crypto.randomUUID(); 
+                isUserAuthenticated = false;
+                userIdDisplay.textContent = '用戶 ID: 匿名 (未認證)';
+                authText.textContent = '匿名模式，故事不會保存。';
+                userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
+            }
+            isAuthReady = true;
+            loadingSpinner.classList.add('hidden');
+            updateUIState();
+        });
 
-                // 设置身份验证状态监听器
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        // 关键判断：检查用户是否为匿名用户
-                        isUserAuthenticated = !user.isAnonymous; 
-                        
-                        userIdDisplay.textContent = `用户 ID: ${currentUserId}`;
-                        if (isUserAuthenticated) {
-                            authText.textContent = '已登录，可保存故事。';
-                            userIdDisplay.classList.replace('bg-indigo-200', 'bg-green-200');
-                        } else {
-                            authText.textContent = '匿名模式，故事不会保存。';
-                            userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
-                        }
-                    } else {
-                        // 这理论上不会发生，因为我们至少会匿名登录
-                        currentUserId = crypto.randomUUID(); 
-                        isUserAuthenticated = false;
-                        userIdDisplay.textContent = '用户 ID: 匿名 (未认证)';
-                        authText.textContent = '匿名模式，故事不会保存。';
-                        userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
-                    }
-                    isAuthReady = true;
-                    loadingSpinner.classList.add('hidden');
-                    updateUIState();
-                });
+    } catch (error) {
+        console.error("Firebase 初始化失敗:", error);
+        authText.textContent = '連接失敗，使用本地模式';
+        loadingSpinner.classList.add('hidden');
+        
+        // ✅ 修復 3: 提供降級方案 - 使用本地模式
+        currentUserId = crypto.randomUUID();
+        isUserAuthenticated = false;
+        isAuthReady = true;
+        userIdDisplay.textContent = '用戶 ID: 本地模式';
+        userIdDisplay.classList.replace('bg-green-200', 'bg-yellow-200');
+        updateUIState(); // 應用仍然可以工作
+    }
+}
 
 
             } catch (error) {
@@ -387,35 +410,35 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
          * 将状态保存到 Firestore。
          */
         async function saveState() {
-            if (!isUserAuthenticated) {
-                showModal('保存失败', '只有已登录的用户才能保存进度。请登录后重试。');
-                return;
-            }
-            if (!isAuthReady || !currentUserId) {
-                showModal('错误', '应用尚未初始化或身份验证失败，无法保存。');
-                return;
-            }
+    if (!isUserAuthenticated) {
+        showModal('保存失敗', '只有已登錄的用戶才能保存進度。請登錄後重試。');
+        return;
+    }
+    if (!isAuthReady || !currentUserId) {
+        showModal('錯誤', '應用尚未初始化或身份驗證失敗，無法保存。');
+        return;
+    }
 
-            try {
-                const docRef = getSaveDocRef();
-                if (!docRef) throw new Error("无法获取 Firestore 文档引用。");
+    try {
+        const docRef = getSaveDocRef();
+        if (!docRef) throw new Error("無法獲取 Firestore 文檔引用。");
 
-                const state = {
-                    history: storyHistory,
-                    character: characterInput.value,
-                    world: worldInput.value, // 新增
-                    opening: openingInput.value, // 新增
-                    genre: genreSelect.value,
-                    timestamp: new Date().toISOString()
-                };
+        const state = {
+            history: storyHistory,
+            character: characterInput.value,
+            world: worldInput.value,
+            opening: openingInput.value,
+            genre: genreSelect.value,
+            timestamp: new Date().toISOString()
+        };
 
-                await setDoc(docRef, state);
-                showModal('保存成功', '游戏进度已成功保存到云端。');
-            } catch (error) {
-                console.error("保存进度到 Firestore 失败:", error);
-                showModal('保存失败', `保存数据时发生错误: ${error.message}`);
-            }
-        }
+        await setDoc(docRef, state);
+        showModal('保存成功', '遊戲進度已成功保存到雲端。');
+    } catch (error) {
+        console.error("保存進度到 Firestore 失敗:", error);
+        showModal('保存失敗', `保存數據時發生錯誤: ${error.message}`);
+    }
+}
 
         /**
          * 从 Firestore 加载状态。
@@ -911,6 +934,7 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
     </script>
 </body>
 </html>
+
 
 
 
