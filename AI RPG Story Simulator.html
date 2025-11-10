@@ -79,8 +79,8 @@
             </p>
             <ul class="list-disc list-inside space-y-2 mb-6 text-sm text-gray-600">
                 <li>**AI 内容生成：** 所有故事内容由 AI 实时创作，本站不对其准确性、完整性或适宜性作任何保证。</li>
-                <li>**数据使用：** 您的故事进程将仅保存在您的设备上，通过 TXT 文件进行导入/导出。</li>
-                <li>**隐私保护：** 所有数据都保存在您的本地设备，我们不会收集任何个人信息。</li>
+                <li>**数据使用：** 您的故事进程将用于持续的 AI 交互。**只有登录用户的故事会被永久储存。**匿名用户的故事不会被保存。</li>
+                <li>**服务条款 & 隐私：** 请仔细阅读我们的服务条款和隐私政策。</li>
             </ul>
             <div class="flex justify-end space-x-4">
                 <button id="modal-reject" class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold rounded-lg transition duration-150">
@@ -106,12 +106,14 @@
             </p>
         </header>
 
-        <!-- 状态栏 -->
-        <div id="status-bar" class="mb-4 p-3 bg-green-100 rounded-xl shadow-inner text-sm text-green-800 flex justify-between items-center">
+        <!-- Firestore 状态和用户 ID 显示 -->
+        <div id="status-bar" class="mb-4 p-3 bg-indigo-100 rounded-xl shadow-inner text-sm text-indigo-800 flex justify-between items-center">
              <div id="auth-status">
-                <span>本地模式，请使用导出/导入功能保存进度</span>
+                <span id="loading-spinner" class="animate-spin inline-block w-4 h-4 mr-2 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                <span id="auth-text">正在初始化...</span>
              </div>
-             <span id="user-id-display" class="font-mono text-xs bg-green-200 px-2 py-0.5 rounded-md">离线模式</span>
+             <!-- 这里的 class 变化会在 JS 中处理，以区分匿名/认证用户 -->
+             <span id="user-id-display" class="font-mono text-xs bg-indigo-200 px-2 py-0.5 rounded-md">用户 ID: 加载中...</span>
         </div>
 
         <!-- 故事和输入区域 -->
@@ -122,7 +124,7 @@
                 <div id="story-output" class="text-gray-700 whitespace-pre-wrap leading-relaxed">
                     <!-- 初始加载文本 -->
                     <p class="text-center text-gray-500 italic">
-                        欢迎来到 AI 奇幻冒险！请在下方输入您的初始设定，然后点击"开始冒险"按钮。
+                        欢迎来到 AI 奇幻冒险！请在下方输入您的初始设定，然后点击“开始冒险”按钮。
                     </p>
                 </div>
             </div>
@@ -160,6 +162,7 @@
 
             </div>
 
+
             <!-- 动作输入和主要按钮 -->
             <div class="flex flex-col sm:flex-row gap-4 mb-6">
                 <!-- 动作输入 -->
@@ -173,25 +176,24 @@
                 </button>
             </div>
 
-            <!-- 管理按钮区域 -->
+            <!-- 管理按钮 -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                 <button id="export-txt-button" class="btn-base bg-random-green hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg">
+        導出故事
+    </button>
+    <button id="import-txt-button" class="btn-base bg-ai-sparkle hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg">
+        導入故事
+    </button>
+                
                 <button id="new-game-button" class="btn-base bg-admin-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    新游戏
+                    <span id="new-game-text">开始新游戏</span>
                 </button>
-                <button id="clear-history-button" class="btn-base bg-admin-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    清空历史
-                </button>
-                <button id="export-txt-button" class="btn-base bg-random-green hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    导出故事
-                </button>
-                <button id="import-txt-button" class="btn-base bg-ai-sparkle hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    导入故事
+                <button id="clear-history-button" class="btn-base bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50">
+                    清空对话
                 </button>
             </div>
-
-            <!-- 隐藏的档案输入元素 -->
-            <input type="file" id="txt-file-input" accept=".txt" class="hidden">
-            
+            <!-- 隱藏的檔案輸入元素 -->
+<input type="file" id="txt-file-input" accept=".txt" class="hidden">
         </main>
 
         <!-- 消息模态框 (用于替代 alert/confirm) -->
@@ -224,18 +226,19 @@
 
     <!-- 修复：在广告容器后添加完整的页脚内容 -->
     <footer class="max-w-4xl mx-auto p-4 mt-8 border-t border-gray-200">
-        <div class="text-center text-sm text-gray-500">
-            <div class="flex justify-center space-x-6 mb-4">
-                <a href="privacy-policy.html" class="hover:text-primary-blue transition">隐私政策</a>
-                <a href="terms-of-service.html" class="hover:text-primary-blue transition">服务条款</a>
-                <a href="contact.html" class="hover:text-primary-blue transition">联系我们</a>
-            </div>
-            <p>&copy; 2025 abyss_123. 保留所有权利.</p>
+    <div class="text-center text-sm text-gray-500">
+        <div class="flex justify-center space-x-6 mb-4">
+            <a href="privacy-policy.html" class="hover:text-primary-blue transition">隐私政策</a>
+            <a href="terms-of-service.html" class="hover:text-primary-blue transition">服务条款</a>
+            <a href="contact.html" class="hover:text-primary-blue transition">联系我们</a>
         </div>
-    </footer>
+        <p>&copy; 2025 abyss_123. 保留所有权利.</p>
+    </div>
+</footer>
 
 
-    
+    <script type="module">
+        
 
         
        // 定义全局的 API Key
@@ -246,10 +249,29 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
 // 在您的 Vercel 环境中，请确保添加名为 GEMINI_API_KEY 的环境变量。
 
 
-      
-          // 新增的输入元素
+        
+
+        // 状态管理
+        let storyHistory = [];
+        let isGenerating = false;
+        let isRandomizing = false; // 新增：用于随机生成状态
+        let isGameStarted = false;
+        const STATE_COLLECTION = 'game_states';
+        const STATE_DOC_ID = 'main_save';
+
+        // UI 元素
+        const appContainer = document.getElementById('app-container');
+        const acceptanceModal = document.getElementById('acceptance-modal');
+        const modalAccept = document.getElementById('modal-accept');
+        const modalReject = document.getElementById('modal-reject');
+
+        const storyOutput = document.getElementById('story-output');
+        const actionInput = document.getElementById('action-input');
+        
+        // 新增的输入元素
         const worldInput = document.getElementById('world-input'); 
         const openingInput = document.getElementById('opening-input'); 
+
         const characterInput = document.getElementById('character-input');
         const genreSelect = document.getElementById('genre-select');
         
@@ -257,258 +279,25 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
         const buttonText = document.getElementById('button-text');
         const loadingSpinnerButton = document.getElementById('loading-spinner-button');
         
-        const randomizeButton = document.getElementById('randomize-button');
+        const randomizeButton = document.getElementById('randomize-button'); // 新增随机生成按钮
         const randomText = document.getElementById('random-text');
         const loadingSpinnerRandom = document.getElementById('loading-spinner-random');
 
+        const authText = document.getElementById('auth-text');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const saveButton = document.getElementById('save-button');
+        const loadButton = document.getElementById('load-button');
         const newGameButton = document.getElementById('new-game-button');
         const clearHistoryButton = document.getElementById('clear-history-button');
-        const exportTxtButton = document.getElementById('export-txt-button');
-        const importTxtButton = document.getElementById('import-txt-button');
 
 
-        // 初始化应用
-        function initializeApp() {
-            updateUIState();
-        }
-
-        // TXT 导出功能
-        function exportStoryToTxt() {
-            if (storyHistory.length === 0) {
-                showModal('导出失败', '没有故事内容可以导出。');
-                return;
-            }
-
-            try {
-                // 构建 TXT 内容
-                let txtContent = `AI 奇幻冒险故事存档\n`;
-                txtContent += `生成时间: ${new Date().toLocaleString('zh-CN')}\n`;
-                txtContent += `故事类型: ${genreSelect.value}\n`;
-                txtContent += `角色设定: ${characterInput.value}\n`;
-                txtContent += `世界观: ${worldInput.value}\n`;
-                txtContent += `开场设定: ${openingInput.value}\n`;
-                txtContent += `${"=".repeat(50)}\n\n`;
-
-                // 添加故事内容
-                storyHistory.forEach((item, index) => {
-                    if (item.role === 'user') {
-                        txtContent += `[第 ${index + 1} 回合 - 您的行动]\n`;
-                        txtContent += `> ${item.text}\n\n`;
-                    } else if (item.role === 'model') {
-                        txtContent += `[第 ${index + 1} 回合 - AI 叙述]\n`;
-                        txtContent += `${item.text}\n\n`;
-                        txtContent += `${"=".repeat(50)}\n\n`;
-                    }
-                });
-
-                // 添加元数据（用于重新导入）
-                const metadata = {
-                    version: '1.0',
-                    timestamp: new Date().toISOString(),
-                    character: characterInput.value,
-                    world: worldInput.value,
-                    opening: openingInput.value,
-                    genre: genreSelect.value,
-                    history: storyHistory
-                };
-
-                txtContent += `\n\n<!-- METADATA: ${JSON.stringify(metadata)} -->`;
-
-                // 创建下载
-                const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                
-                const fileName = `story_${new Date().toISOString().slice(0, 10)}_${characterInput.value || 'adventure'}.txt`;
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showModal('导出成功', `故事已导出为 ${fileName}，您可以保存这个档案以便将来继续。`);
-
-            } catch (error) {
-                console.error('导出失败:', error);
-                showModal('导出失败', `导出过程中发生错误: ${error.message}`);
-            }
-        }
-
-        // TXT 导入功能
-        function importStoryFromTxt() {
-            const fileInput = document.getElementById('txt-file-input');
-            fileInput.click();
-        }
-
-        // 处理档案选择
-        document.getElementById('txt-file-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    processImportedTxt(content, file.name);
-                } catch (error) {
-                    console.error('档案读取失败:', error);
-                    showModal('导入失败', '无法读取档案内容。');
-                }
-            };
-            
-            reader.onerror = function() {
-                showModal('导入失败', '读取档案时发生错误。');
-            };
-            
-            reader.readAsText(file);
-        });
-
-        // 处理导入的 TXT 内容
-        function processImportedTxt(content, fileName) {
-            try {
-                // 尝试从元数据恢复
-                const metadataMatch = content.match(/<!-- METADATA: ({.*?}) -->/);
-                
-                if (metadataMatch) {
-                    // 有元数据的完整导入
-                    const metadata = JSON.parse(metadataMatch[1]);
-                    return restoreFromMetadata(metadata, fileName);
-                } else {
-                    // 纯文本文件的智能导入
-                    return restoreFromPlainText(content, fileName);
-                }
-                
-            } catch (error) {
-                console.error('处理导入档案失败:', error);
-                showModal('导入失败', `档案格式不正确: ${error.message}`);
-            }
-        }
-
-        // 从元数据恢复
-        function restoreFromMetadata(metadata, fileName) {
-            // 检查版本兼容性
-            if (!metadata.version || !metadata.history) {
-                throw new Error('档案格式不完整，缺少必要的元数据。');
-            }
-
-            // 确认用户是否要覆盖当前进度
-            showModal('确认导入', 
-                `即将导入故事 "${fileName}"。这将覆盖您当前的游戏进度，确定要继续吗？`,
-                true
-            ).then(confirmed => {
-                if (confirmed) {
-                    // 恢复所有状态
-                    storyHistory = metadata.history || [];
-                    characterInput.value = metadata.character || '';
-                    worldInput.value = metadata.world || '';
-                    openingInput.value = metadata.opening || '';
-                    genreSelect.value = metadata.genre || '奇幻史诗';
-                    
-                    // 更新 UI
-                    isGameStarted = storyHistory.length > 0;
-                    displayStory();
-                    updateUIState();
-                    
-                    showModal('导入成功', 
-                        `故事 "${fileName}" 已成功导入！您可以继续这个冒险。\n\n` +
-                        `进度: ${storyHistory.length} 回合对话\n` +
-                        `角色: ${characterInput.value || '未设定'}`);
-                }
-            });
-        }
-
-        // 从纯文本恢复（兼容旧格式）
-        function restoreFromPlainText(content, fileName) {
-            // 解析纯文本格式
-            const lines = content.split('\n');
-            const restoredHistory = [];
-            let currentRole = null;
-            let currentText = [];
-            
-            lines.forEach(line => {
-                line = line.trim();
-                
-                if (line.startsWith('[第') && line.includes('回合 - 您的行动]')) {
-                    // 保存上一个对话
-                    if (currentRole && currentText.length > 0) {
-                        restoredHistory.push({
-                            role: currentRole,
-                            text: currentText.join('\n').trim()
-                        });
-                    }
-                    // 开始新的用户对话
-                    currentRole = 'user';
-                    currentText = [];
-                } 
-                else if (line.startsWith('[第') && line.includes('回合 - AI 叙述]')) {
-                    // 保存上一个对话
-                    if (currentRole && currentText.length > 0) {
-                        restoredHistory.push({
-                            role: currentRole,
-                            text: currentText.join('\n').trim()
-                        });
-                    }
-                    // 开始新的 AI 对话
-                    currentRole = 'model';
-                    currentText = [];
-                }
-                else if (line.startsWith('>') && currentRole === 'user') {
-                    // 用户行动内容
-                    currentText.push(line.substring(1).trim());
-                }
-                else if (line.length > 0 && !line.includes('='.repeat(50)) && 
-                         !line.startsWith('AI 奇幻冒险故事存档') &&
-                         !line.startsWith('生成时间:') &&
-                         !line.startsWith('故事类型:') &&
-                         !line.startsWith('角色设定:') &&
-                         !line.startsWith('世界观:') &&
-                         !line.startsWith('开场设定:')) {
-                    // AI 叙述内容
-                    if (currentRole) {
-                        currentText.push(line);
-                    }
-                }
-            });
-            
-            // 保存最后一个对话
-            if (currentRole && currentText.length > 0) {
-                restoredHistory.push({
-                    role: currentRole,
-                    text: currentText.join('\n').trim()
-                });
-            }
-            
-            if (restoredHistory.length === 0) {
-                throw new Error('无法从档案中解析出有效的故事内容。');
-            }
-            
-            // 确认导入
-            showModal('确认导入', 
-                `找到 ${restoredHistory.length} 回合对话。这将覆盖您当前的游戏进度，确定要继续吗？`,
-                true
-            ).then(confirmed => {
-                if (confirmed) {
-                    storyHistory = restoredHistory;
-                    isGameStarted = storyHistory.length > 0;
-                    
-                    // 尝试从档案名提取角色名
-                    const charMatch = fileName.match(/story_.*_(.*)\.txt/);
-                    if (charMatch && charMatch[1] !== 'adventure') {
-                        characterInput.value = charMatch[1];
-                    }
-                    
-                    displayStory();
-                    updateUIState();
-                    
-                    showModal('导入成功', 
-                        `故事已从 "${fileName}" 导入！\n\n` +
-                        `已恢复 ${restoredHistory.length} 回合对话。\n` +
-                        `请检查角色设定是否正确，然后继续您的冒险。`);
-                }
-            });
-        }
+        // 在現有的事件監聽器部分添加
+       document.getElementById('export-txt-button').addEventListener('click', exportStoryToTxt);
+       document.getElementById('import-txt-button').addEventListener('click', importStoryFromTxt);
+       
+        
+        // --- 通用辅助函数 ---
 
         /**
          * 显示故事内容并自动滚动到底部。
@@ -540,12 +329,21 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
          * 更新 UI 状态（按钮文本、禁用状态）。
          */
         function updateUIState() {
-            const canInteract = !isGenerating && !isRandomizing;
+            const canInteract = isAuthReady && !isGenerating && !isRandomizing;
             
             generateButton.disabled = !canInteract;
             randomizeButton.disabled = !canInteract || isGameStarted; // 游戏开始后禁用随机生成
             
-            if (isGenerating) {
+            // 匿名用户禁用保存/加载
+            saveButton.disabled = !canInteract || !isGameStarted || !isUserAuthenticated;
+            loadButton.disabled = !canInteract || !isUserAuthenticated;
+            
+            clearHistoryButton.disabled = !canInteract || !isGameStarted;
+
+            if (!isAuthReady) {
+                generateButton.disabled = true;
+                buttonText.textContent = "正在连接...";
+            } else if (isGenerating) {
                 buttonText.textContent = '生成中...';
                 loadingSpinnerButton.classList.remove('hidden');
                 generateButton.classList.add('animate-pulse');
@@ -629,47 +427,315 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
             modalAccept.onclick = () => {
                 acceptanceModal.classList.add('hidden');
                 appContainer.classList.remove('opacity-0', 'pointer-events-none');
-                initializeApp();
+                initializeFirebase();
             };
 
+            // --- 关键修改：不接受则跳转到 index.html ---
             modalReject.onclick = () => {
                 window.location.href = 'index.html'; 
             };
+            // ---------------------------------------------
         }
+
+        // TXT 導出功能
+function exportStoryToTxt() {
+    if (storyHistory.length === 0) {
+        showModal('導出失敗', '沒有故事內容可以導出。');
+        return;
+    }
+
+    try {
+        // 構建 TXT 內容
+        let txtContent = `AI 奇幻冒險故事存檔\n`;
+        txtContent += `生成時間: ${new Date().toLocaleString('zh-TW')}\n`;
+        txtContent += `故事類型: ${genreSelect.value}\n`;
+        txtContent += `角色設定: ${characterInput.value}\n`;
+        txtContent += `世界觀: ${worldInput.value}\n`;
+        txtContent += `開場設定: ${openingInput.value}\n`;
+        txtContent += `="=".repeat(50)}\n\n`;
+
+        // 添加故事內容
+        storyHistory.forEach((item, index) => {
+            if (item.role === 'user') {
+                txtContent += `[第 ${index + 1} 回合 - 您的行動]\n`;
+                txtContent += `> ${item.text}\n\n`;
+            } else if (item.role === 'model') {
+                txtContent += `[第 ${index + 1} 回合 - AI 敘述]\n`;
+                txtContent += `${item.text}\n\n`;
+                txtContent += `="=".repeat(50)}\n\n`;
+            }
+        });
+
+        // 添加元數據（用於重新導入）
+        const metadata = {
+            version: '1.0',
+            timestamp: new Date().toISOString(),
+            character: characterInput.value,
+            world: worldInput.value,
+            opening: openingInput.value,
+            genre: genreSelect.value,
+            history: storyHistory
+        };
+
+        txtContent += `\n\n<!-- METADATA: ${JSON.stringify(metadata)} -->`;
+
+        // 創建下載
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const fileName = `story_${new Date().toISOString().slice(0, 10)}_${characterInput.value || 'adventure'}.txt`;
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showModal('導出成功', `故事已導出為 ${fileName}，您可以保存這個檔案以便將來繼續。`);
+
+    } catch (error) {
+        console.error('導出失敗:', error);
+        showModal('導出失敗', `導出過程中發生錯誤: ${error.message}`);
+    }
+}
+
+        // TXT 導入功能
+function importStoryFromTxt() {
+    const fileInput = document.getElementById('txt-file-input');
+    fileInput.click();
+}
+
+// 處理檔案選擇
+document.getElementById('txt-file-input').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const content = e.target.result;
+            processImportedTxt(content, file.name);
+        } catch (error) {
+            console.error('檔案讀取失敗:', error);
+            showModal('導入失敗', '無法讀取檔案內容。');
+        }
+    };
+    
+    reader.onerror = function() {
+        showModal('導入失敗', '讀取檔案時發生錯誤。');
+    };
+    
+    reader.readAsText(file);
+});
+
+// 處理導入的 TXT 內容
+function processImportedTxt(content, fileName) {
+    try {
+        // 嘗試從元數據恢復
+        const metadataMatch = content.match(/<!-- METADATA: ({.*?}) -->/);
+        
+        if (metadataMatch) {
+            // 有元數據的完整導入
+            const metadata = JSON.parse(metadataMatch[1]);
+            return restoreFromMetadata(metadata, fileName);
+        } else {
+            // 純文本文件的智能導入
+            return restoreFromPlainText(content, fileName);
+        }
+        
+    } catch (error) {
+        console.error('處理導入檔案失敗:', error);
+        showModal('導入失敗', `檔案格式不正確: ${error.message}`);
+    }
+}
+
+// 從元數據恢復
+function restoreFromMetadata(metadata, fileName) {
+    // 檢查版本兼容性
+    if (!metadata.version || !metadata.history) {
+        throw new Error('檔案格式不完整，缺少必要的元數據。');
+    }
+
+    // 確認用戶是否要覆蓋當前進度
+    showModal('確認導入', 
+        `即將導入故事 "${fileName}"。這將覆蓋您當前的遊戲進度，確定要繼續嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            // 恢復所有狀態
+            storyHistory = metadata.history || [];
+            characterInput.value = metadata.character || '';
+            worldInput.value = metadata.world || '';
+            openingInput.value = metadata.opening || '';
+            genreSelect.value = metadata.genre || '奇幻史诗';
+            
+            // 更新 UI
+            isGameStarted = storyHistory.length > 0;
+            displayStory();
+            updateUIState();
+            
+            showModal('導入成功', 
+                `故事 "${fileName}" 已成功導入！您可以繼續這個冒險。\n\n` +
+                `進度: ${storyHistory.length} 回合對話\n` +
+                `角色: ${characterInput.value || '未設定'}`);
+        }
+    });
+}
+
+// 從純文本恢復（兼容舊格式）
+function restoreFromPlainText(content, fileName) {
+    // 解析純文本格式
+    const lines = content.split('\n');
+    const restoredHistory = [];
+    let currentRole = null;
+    let currentText = [];
+    
+    lines.forEach(line => {
+        line = line.trim();
+        
+        if (line.startsWith('[第') && line.includes('回合 - 您的行動]')) {
+            // 保存上一個對話
+            if (currentRole && currentText.length > 0) {
+                restoredHistory.push({
+                    role: currentRole,
+                    text: currentText.join('\n').trim()
+                });
+            }
+            // 開始新的用戶對話
+            currentRole = 'user';
+            currentText = [];
+        } 
+        else if (line.startsWith('[第') && line.includes('回合 - AI 敘述]')) {
+            // 保存上一個對話
+            if (currentRole && currentText.length > 0) {
+                restoredHistory.push({
+                    role: currentRole,
+                    text: currentText.join('\n').trim()
+                });
+            }
+            // 開始新的 AI 對話
+            currentRole = 'model';
+            currentText = [];
+        }
+        else if (line.startsWith('>') && currentRole === 'user') {
+            // 用戶行動內容
+            currentText.push(line.substring(1).trim());
+        }
+        else if (line.length > 0 && !line.includes('='.repeat(50)) && 
+                 !line.startsWith('AI 奇幻冒險故事存檔') &&
+                 !line.startsWith('生成時間:') &&
+                 !line.startsWith('故事類型:') &&
+                 !line.startsWith('角色設定:') &&
+                 !line.startsWith('世界觀:') &&
+                 !line.startsWith('開場設定:')) {
+            // AI 敘述內容
+            if (currentRole) {
+                currentText.push(line);
+            }
+        }
+    });
+    
+    // 保存最後一個對話
+    if (currentRole && currentText.length > 0) {
+        restoredHistory.push({
+            role: currentRole,
+            text: currentText.join('\n').trim()
+        });
+    }
+    
+    if (restoredHistory.length === 0) {
+        throw new Error('無法從檔案中解析出有效的故事內容。');
+    }
+    
+    // 確認導入
+    showModal('確認導入', 
+        `找到 ${restoredHistory.length} 回合對話。這將覆蓋您當前的遊戲進度，確定要繼續嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            storyHistory = restoredHistory;
+            isGameStarted = storyHistory.length > 0;
+            
+            // 嘗試從檔案名提取角色名
+            const charMatch = fileName.match(/story_.*_(.*)\.txt/);
+            if (charMatch && charMatch[1] !== 'adventure') {
+                characterInput.value = charMatch[1];
+            }
+            
+            displayStory();
+            updateUIState();
+            
+            showModal('導入成功', 
+                `故事已從 "${fileName}" 導入！\n\n` +
+                `已恢復 ${restoredHistory.length} 回合對話。\n` +
+                `請檢查角色設定是否正確，然後繼續您的冒險。`);
+        }
+    });
+}
+
+        // 導入前的故事預覽
+function showStoryPreview(history, fileName) {
+    const previewContent = history.slice(-3).map(item => {
+        if (item.role === 'user') {
+            return `您: ${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}`;
+        } else {
+            return `AI: ${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}`;
+        }
+    }).join('\n');
+
+    showModal('故事預覽', 
+        `檔案: ${fileName}\n` +
+        `對話回合: ${history.length}\n` +
+        `最近內容:\n${previewContent}\n\n` +
+        `確定要導入這個故事嗎？`,
+        true
+    ).then(confirmed => {
+        if (confirmed) {
+            storyHistory = history;
+            isGameStarted = true;
+            displayStory();
+            updateUIState();
+            showModal('導入成功', '故事已成功導入！');
+        }
+    });
+}
+
 
         // --- LLM 交互逻辑 ---
         
         /**
          * 使用指数退避重试机制进行 API 调用。
          */
-        async function fetchWithRetry(url, payload, retries = 3) {
-            // 构建最终的带API Key的URL
-            const finalUrl = `${url}?key=${apiKey}`;
-            
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(finalUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+       async function fetchWithRetry(url, payload, retries = 3) {
+    // 构建最终的带API Key的URL
+    const finalUrl = `${url}?key=${apiKey}`; // <-- 这里添加了API Key
+    
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(finalUrl, { // <-- 使用 finalUrl
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                    if (!response.ok) {
-                        const errorBody = await response.json();
-                        throw new Error(`API error ${response.status}: ${JSON.stringify(errorBody)}`);
-                    }
-
-                    return await response.json();
-                } catch (error) {
-                    console.error(`API 调用失败 (尝试 ${i + 1}/${retries}):`, error);
-                    if (i === retries - 1) throw error; // 最后一次失败，抛出错误
-
-                    // 指数退避 (1s, 2s, 4s...)
-                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(`API error ${response.status}: ${JSON.stringify(errorBody)}`);
             }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`API 调用失败 (尝试 ${i + 1}/${retries}):`, error);
+            if (i === retries - 1) throw error; // 最后一次失败，抛出错误
+
+            // 指数退避 (1s, 2s, 4s...)
+            const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
+    }
+}
 
         /**
          * 构建系统指令。
@@ -685,13 +751,13 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
                 
                 **指令要点：**
                 1. **故事风格：** 必须严格遵循用户选择的 [${genre}] 风格。
-                2. **世界观/背景：** 故事发生的世界是："${world}"。
-                3. **角色：** 故事的主角是："${character}"。
+                2. **世界观/背景：** 故事发生的世界是：“${world}”。
+                3. **角色：** 故事的主角是：“${character}”。
                 4. **内容生成：**
                     - 每次回复必须在 150 到 250 字之间。
                     - 描述环境变化、NPC 反应和行动结果。
                     - 保持悬念，并以开放式的问题或挑战结束回复，激励用户采取下一步行动。
-                    - 必须严格按照用户的要求以及指令生成，如果用户要求与其他规则相冲，本规则优先。
+                                        -必须严格按照用户的要求以及指令生成，如果用户要求与其他规则相冲，本规则优先。
                 5. **历史：** 使用提供的 storyHistory 来理解上下文。
                 6. **输出格式：** 仅输出故事文本，不要包含任何额外的对话、提示词或格式。
             `.trim();
@@ -701,7 +767,7 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
          * 新增功能：随机生成缺失的设定。
          */
         async function randomizeInputs() {
-            if (isGenerating || isRandomizing || isGameStarted) return;
+            if (isGenerating || isRandomizing || isGameStarted || !isAuthReady) return;
 
             const fieldsToGenerate = [];
             if (!worldInput.value.trim()) fieldsToGenerate.push('World Setting (世界观/背景)');
@@ -767,7 +833,7 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
          * AI 故事生成函数。
          */
         async function generateStory() {
-            if (isGenerating) return;
+            if (isGenerating || !isAuthReady) return;
 
             const action = actionInput.value.trim();
             const character = characterInput.value.trim();
@@ -777,13 +843,13 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
             // 首次开始游戏检查：确保所有设定字段已填写
             if (!isGameStarted) {
                 if (!character || !world || !opening || !action) {
-                    showModal('信息缺失', '首次开始游戏，请填写【世界观】、【角色】、【初始场景】以及您的【第一个行动】！您可以使用"随机生成"按钮。');
+                    showModal('信息缺失', '首次开始游戏，请填写【世界观】、【角色】、【初始场景】以及您的【第一个行动】！您可以使用“随机生成”按钮。');
                     return;
                 }
                 isGameStarted = true;
                 storyHistory = [];
                 // 首次行动作为故事的引子
-                storyHistory.push({ role: 'user', text: `故事设定：世界观是 "${world}"，我的角色是 "${character}"。故事从这里开始："${opening}"。我的第一个行动是："${action}"。请根据所有设定写出故事的开头。` });
+                storyHistory.push({ role: 'user', text: `故事设定：世界观是 "${world}"，我的角色是 "${character}"。故事从这里开始：“${opening}”。我的第一个行动是：“${action}”。请根据所有设定写出故事的开头。` });
             } else {
                 if (!action) {
                     showModal('请行动', '请描述您的下一步行动，以继续故事。');
@@ -808,6 +874,7 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
             tempLoadingElement.innerHTML = '<span class="animate-spin inline-block w-4 h-4 mr-2 border-2 border-gray-500 border-t-transparent rounded-full"></span> AI 正在思考...';
             storyOutput.appendChild(tempLoadingElement);
             storyOutput.parentElement.scrollTop = storyOutput.parentElement.scrollHeight;
+
 
             try {
                 const systemInstruction = buildSystemInstruction();
@@ -873,11 +940,14 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
                 isGameStarted = false;
                 
                 // 清理 UI
-                storyOutput.innerHTML = `<p class="text-center text-gray-500 italic">欢迎来到 AI 奇幻冒险！请在下方输入您的初始设定，然后点击"开始冒险"按钮。</p>`;
+                storyOutput.innerHTML = `<p class="text-center text-gray-500 italic">欢迎来到 AI 奇幻冒险！请在下方输入您的初始设定，然后点击“开始冒险”按钮。</p>`;
                 worldInput.value = '';
                 characterInput.value = '';
                 openingInput.value = '';
                 actionInput.value = '';
+                
+                // 清理 Firestore 状态 (仅对登录用户)
+                await clearState();
                 
                 updateUIState();
                 showModal('新游戏开始', '新游戏已就绪。请设定您的世界观、角色并开始冒险！');
@@ -886,18 +956,20 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
 
         // --- 事件监听器 ---
         generateButton.addEventListener('click', generateStory);
-        randomizeButton.addEventListener('click', randomizeInputs);
+        randomizeButton.addEventListener('click', randomizeInputs); // 绑定随机生成事件
         actionInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 generateStory();
             }
         });
+        saveButton.addEventListener('click', saveState);
+        loadButton.addEventListener('click', loadState);
         newGameButton.addEventListener('click', startNewGame);
         clearHistoryButton.addEventListener('click', async () => {
              const confirm = await showModal(
                 '确认清空历史',
-                '您确定要清空当前对话历史吗？',
+                '您确定要清空当前对话历史吗？（不会影响云端保存的进度）',
                 true
             );
 
@@ -908,8 +980,6 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
                 showModal('清空成功', '当前对话历史已清除。');
             }
         });
-        exportTxtButton.addEventListener('click', exportStoryToTxt);
-        importTxtButton.addEventListener('click', importStoryFromTxt);
 
         // 页面加载完成时首先显示条款模态框
         window.onload = showAcceptanceModal;
@@ -917,3 +987,5 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
     </script>
 </body>
 </html>
+
+
