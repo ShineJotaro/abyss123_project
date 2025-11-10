@@ -253,12 +253,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         
-       // 定义全局的 API Key
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-// 修改这一行：
-const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构建时被替换的占位符
-// 假设 Vercel 会注入名为 VERCEL_GEMINI_API_KEY 的变量。
-// 在您的 Vercel 环境中，请确保添加名为 GEMINI_API_KEY 的环境变量。
+     
 
 
         // Firestore 全局实例
@@ -934,6 +929,7 @@ async function initializeFirebase() {
     </script>
 </body>
 </html>
+
 
 
 
