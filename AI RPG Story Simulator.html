@@ -108,13 +108,19 @@
 
         <!-- Firestore 状态和用户 ID 显示 -->
         <div id="status-bar" class="mb-4 p-3 bg-indigo-100 rounded-xl shadow-inner text-sm text-indigo-800 flex justify-between items-center">
-             <div id="auth-status">
-                <span id="loading-spinner" class="animate-spin inline-block w-4 h-4 mr-2 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
-                <span id="auth-text">正在初始化...</span>
-             </div>
-             <!-- 这里的 class 变化会在 JS 中处理，以区分匿名/认证用户 -->
-             <span id="user-id-display" class="font-mono text-xs bg-indigo-200 px-2 py-0.5 rounded-md">用户 ID: 加载中...</span>
-        </div>
+     <div id="auth-status" class="flex items-center">
+        <span id="loading-spinner" class="animate-spin inline-block w-4 h-4 mr-2 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+        <span id="auth-text">正在初始化...</span>
+        <!-- 新增登錄按鈕 -->
+        <button id="login-button" class="hidden ml-2 px-3 py-1 bg-ai-sparkle text-white text-xs font-semibold rounded-lg hover:bg-orange-700 transition">
+            登錄保存進度
+        </button>
+        <button id="logout-button" class="hidden ml-2 px-3 py-1 bg-admin-red text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition">
+            登出
+        </button>
+     </div>
+     <span id="user-id-display" class="font-mono text-xs bg-indigo-200 px-2 py-0.5 rounded-md">用戶 ID: 加載中...</span>
+</div>
 
         <!-- 故事和输入区域 -->
         <main class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
@@ -311,10 +317,10 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
 
 
         // --- 修复 1: Firestore 初始化和身份验证 ---
-        /**
-         * 初始化 Firebase 应用和 Firestore/Auth 服务，并进行身份验证。
-         */
-        const defaultFirebaseConfig = {
+/**
+ * 初始化 Firebase 应用和 Firestore/Auth 服务，并进行身份验证。
+ */
+const defaultFirebaseConfig = {
     apiKey: "AIzaSyCD7f8ZnlXZuI_DiBc_M2c9jl44WajJMhw",
     authDomain: "abyss123-project.firebaseapp.com",
     projectId: "abyss123-project",
@@ -322,6 +328,78 @@ const apiKey = '%%VERCEL_GEMINI_API_KEY_PLACEHOLDER%%'; // 这是一个将在构
     messagingSenderId: "233505718695",
     appId: "1:233505718695:web:1a62ca261f9ebd9beaf682"
 };
+
+// 新增全局變量
+let currentUserEmail = null;
+
+// 新增：登錄函數
+async function signInWithEmail() {
+    const email = prompt('請輸入您的電子郵件地址以登錄（用於保存進度）:');
+    if (!email) return;
+    
+    // 簡單的郵箱驗證
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showModal('輸入錯誤', '請輸入有效的電子郵件地址。');
+        return;
+    }
+    
+    try {
+        // 保存郵箱到本地存儲
+        localStorage.setItem('userEmail', email);
+        currentUserEmail = email;
+        isUserAuthenticated = true;
+        
+        updateAuthUI();
+        showModal('登錄成功', `歡迎 ${email}！現在可以保存遊戲進度了。`);
+    } catch (error) {
+        console.error("登錄失敗:", error);
+        showModal('登錄失敗', '登錄過程中出現錯誤。');
+    }
+}
+
+// 新增：登出函數
+function signOut() {
+    localStorage.removeItem('userEmail');
+    currentUserEmail = null;
+    isUserAuthenticated = false;
+    
+    updateAuthUI();
+    showModal('登出成功', '您已成功登出。');
+}
+
+// 新增：更新認證 UI 的函數
+function updateAuthUI() {
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const authText = document.getElementById('auth-text');
+    const userIdDisplay = document.getElementById('user-id-display');
+    
+    if (isUserAuthenticated && currentUserEmail) {
+        // 已登錄狀態
+        authText.textContent = `已登錄: ${currentUserEmail}`;
+        userIdDisplay.textContent = `用戶: ${currentUserEmail}`;
+        userIdDisplay.classList.replace('bg-indigo-200', 'bg-green-200');
+        loginButton.classList.add('hidden');
+        logoutButton.classList.remove('hidden');
+        
+        // 啟用保存按鈕
+        saveButton.disabled = false;
+        saveButton.textContent = "保存進度";
+        
+    } else {
+        // 未登錄/匿名狀態
+        authText.textContent = '匿名模式，故事不會保存';
+        userIdDisplay.textContent = `用戶 ID: ${currentUserId}`;
+        userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
+        loginButton.classList.remove('hidden');
+        logoutButton.classList.add('hidden');
+        
+        // 禁用保存按鈕
+        saveButton.disabled = true;
+        saveButton.textContent = "保存進度 (請先登錄)";
+    }
+}
 
 async function initializeFirebase() {
     try {
@@ -338,6 +416,13 @@ async function initializeFirebase() {
         db = getFirestore(app);
         auth = getAuth(app);
 
+        // 檢查是否有保存的郵箱登錄
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+            currentUserEmail = savedEmail;
+            isUserAuthenticated = true;
+        }
+
         if (initialAuthToken) {
             await signInWithCustomToken(auth, initialAuthToken);
         } else {
@@ -347,22 +432,19 @@ async function initializeFirebase() {
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
-                isUserAuthenticated = !user.isAnonymous; 
                 
-                userIdDisplay.textContent = `用戶 ID: ${currentUserId}`;
-                if (isUserAuthenticated) {
-                    authText.textContent = '已登錄，可保存故事。';
-                    userIdDisplay.classList.replace('bg-indigo-200', 'bg-green-200');
-                } else {
-                    authText.textContent = '匿名模式，故事不會保存。';
-                    userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
+                // 如果沒有郵箱登錄，使用 Firebase 匿名狀態
+                if (!currentUserEmail) {
+                    isUserAuthenticated = !user.isAnonymous;
                 }
+                
+                updateAuthUI(); // 使用新的 UI 更新函數
             } else {
                 currentUserId = crypto.randomUUID(); 
-                isUserAuthenticated = false;
-                userIdDisplay.textContent = '用戶 ID: 匿名 (未認證)';
-                authText.textContent = '匿名模式，故事不會保存。';
-                userIdDisplay.classList.replace('bg-green-200', 'bg-indigo-200');
+                if (!currentUserEmail) {
+                    isUserAuthenticated = false;
+                }
+                updateAuthUI();
             }
             isAuthReady = true;
             loadingSpinner.classList.add('hidden');
@@ -374,15 +456,32 @@ async function initializeFirebase() {
         authText.textContent = '連接失敗，使用本地模式';
         loadingSpinner.classList.add('hidden');
         
-        // ✅ 修復 3: 提供降級方案 - 使用本地模式
-        currentUserId = crypto.randomUUID();
-        isUserAuthenticated = false;
+        // 檢查本地是否有保存的郵箱
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+            currentUserEmail = savedEmail;
+            isUserAuthenticated = true;
+        } else {
+            currentUserId = crypto.randomUUID();
+            isUserAuthenticated = false;
+        }
+        
         isAuthReady = true;
-        userIdDisplay.textContent = '用戶 ID: 本地模式';
+        updateAuthUI(); // 使用新的 UI 更新函數
         userIdDisplay.classList.replace('bg-green-200', 'bg-yellow-200');
-        updateUIState(); // 應用仍然可以工作
     }
 }
+
+// 在現有的事件監聽器部分添加登錄按鈕事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 其他現有的事件監聽器...
+    
+    // 新增登錄按鈕事件監聽
+    document.getElementById('login-button').addEventListener('click', signInWithEmail);
+    document.getElementById('logout-button').addEventListener('click', signOut);
+});
+
+        
 
         /**
          * 获取当前用户私有数据路径下的文档引用
@@ -396,38 +495,41 @@ async function initializeFirebase() {
         }
 
         /**
-         * 将状态保存到 Firestore。
-         */
-        async function saveState() {
-            if (!isUserAuthenticated) {
-                showModal('保存失败', '只有已登录的用户才能保存进度。请登录后重试。');
-                return;
-            }
-            if (!isAuthReady || !currentUserId) {
-                showModal('错误', '应用尚未初始化或身份验证失败，无法保存。');
-                return;
-            }
+ * 將狀態保存到 Firestore。
+ */
+async function saveState() {
+    // 修改：使用新的認證檢查
+    if (!isUserAuthenticated) {
+        showModal('保存失敗', '請先登錄才能保存進度。點擊"登錄保存進度"按鈕進行登錄。');
+        return;
+    }
+    
+    if (!isAuthReady || !currentUserId) {
+        showModal('錯誤', '應用尚未初始化或身份驗證失敗，無法保存。');
+        return;
+    }
 
-            try {
-                const docRef = getSaveDocRef();
-                if (!docRef) throw new Error("无法获取 Firestore 文档引用。");
+    try {
+        const docRef = getSaveDocRef();
+        if (!docRef) throw new Error("無法獲取 Firestore 文檔引用。");
 
-                const state = {
-                    history: storyHistory,
-                    character: characterInput.value,
-                    world: worldInput.value, // 新增
-                    opening: openingInput.value, // 新增
-                    genre: genreSelect.value,
-                    timestamp: new Date().toISOString()
-                };
+        const state = {
+            history: storyHistory,
+            character: characterInput.value,
+            world: worldInput.value,
+            opening: openingInput.value,
+            genre: genreSelect.value,
+            timestamp: new Date().toISOString(),
+            userEmail: currentUserEmail // 新增：保存用戶郵箱
+        };
 
-                await setDoc(docRef, state);
-                showModal('保存成功', '游戏进度已成功保存到云端。');
-            } catch (error) {
-                console.error("保存进度到 Firestore 失败:", error);
-                showModal('保存失败', `保存数据时发生错误: ${error.message}`);
-            }
-        }
+        await setDoc(docRef, state);
+        showModal('保存成功', '遊戲進度已成功保存到雲端。');
+    } catch (error) {
+        console.error("保存進度到 Firestore 失敗:", error);
+        showModal('保存失敗', `保存數據時發生錯誤: ${error.message}`);
+    }
+}
 
         /**
          * 从 Firestore 加载状态。
@@ -923,5 +1025,6 @@ async function initializeFirebase() {
     </script>
 </body>
 </html>
+
 
 
